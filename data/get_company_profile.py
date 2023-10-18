@@ -1,20 +1,22 @@
 """
 GET request based on company number, 07496944 (THE CO-MISSION CHURCHES TRUST).
-
 The authentication method uses an api key stored in a text file located in the parent directory.
+Company information is saved into a CSV file.
 """
 
 import requests
 from requests.auth import HTTPBasicAuth
+import pandas as pd
 import json
 import os
 from urllib.parse import urljoin
 
-def getCompanyInfo(company_num: str) -> str:
-
+"""
+Get company profile info from CH and save it in a CSV file.
+"""
+def getCompanyInfo(company_num: str) -> any:
     # Get api key
-    auth_fp = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
-    auth_file = os.path.join(auth_fp, 'authentication.txt')
+    auth_file = getFileParDir("authentication.txt")
     f = open(auth_file,'r')
     auth_dict = json.loads(f.read())
     username = auth_dict['api_key']
@@ -26,10 +28,21 @@ def getCompanyInfo(company_num: str) -> str:
 
     json_object = json.loads(company_data.text)
 
-    json_formatted_str = json.dumps(json_object, indent=2)
+    df = pd.json_normalize(json_object)
+    
+    data_file = getFileParDir("company_profile.csv")
 
-    return json_formatted_str
+    df.to_csv(data_file, index=False)
+    
+"""
+Get the full path of a file in the parent directory.
+"""
+def getFileParDir(file_name: str) -> str:
+    parent_fp = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
+    full_fp = os.path.join(parent_fp, file_name)
+    return full_fp
     
 if __name__ == '__main__':
-    company = '07496944'    
-    print(getCompanyInfo(company))
+    company = '07496944'
+    # Put company profile data into CSV file.
+    getCompanyInfo(company)

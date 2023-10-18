@@ -9,6 +9,9 @@ __pycache__/
 # Authentication
 /authentication.txt
 
+# Data
+/company_profile.csv
+
 # Distribution / packaging
 .Python
 build/
