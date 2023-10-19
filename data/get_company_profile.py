@@ -50,7 +50,7 @@ def getCompanyInfo(company_num: str) -> any:
         with open(prev_file,"w") as pf:
             pf.write("company_number,ceased_on,effective_from,name\n")
             for prev in prev_companies:
-                pf.write(f"{company_num},{prev['ceased_on']},{prev['effective_from']},{prev['name']}\n")
+                pf.write(f"{company_num},{prev.get('ceased_on')},{prev.get('effective_from')},{prev.get('name')}\n")
 
     df = pd.json_normalize(json_object)
     
@@ -88,5 +88,5 @@ if __name__ == '__main__':
     'MAN UTD football club ltd': '00095489'
     'MAN UTD ltd': '02570509'
     """
-    company = '02570509'
+    company = '07496944'
     getCompanyInfo(company)
