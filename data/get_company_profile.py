@@ -31,24 +31,26 @@ def getCompanyInfo(company_num: str) -> any:
     json_object = json.loads(company_data.text)
     
     # Get sic codes
-    sic_codes = json_object['sic_codes']
+    sic_codes = json_object.get('sic_codes')
     
-    sic_file = getFileParDir('sic_codes.csv')
+    if not (sic_codes is None):
+        sic_file = getFileParDir('sic_codes.csv')
     
-    with open(sic_file,"w") as sf:
-        sf.write("company_number,sic_codes\n")
-        for sic in sic_codes:
-            sf.write(f"{company_num},{sic}\n")
+        with open(sic_file,"w") as sf:
+            sf.write("company_number,sic_codes\n")
+            for sic in sic_codes:
+                sf.write(f"{company_num},{sic}\n")
             
     # Get previous company names
-    prev_companies = json_object['previous_company_names']
+    prev_companies = json_object.get('previous_company_names')
     
-    prev_file = getFileParDir('prev_companies.csv')
+    if not (prev_companies is None):
+        prev_file = getFileParDir('prev_companies.csv')
     
-    with open(prev_file,"w") as pf:
-        pf.write("company_number,ceased_on,effective_from,name\n")
-        for prev in prev_companies:
-            pf.write(f"{company_num},{prev['ceased_on']},{prev['effective_from']},{prev['name']}\n")
+        with open(prev_file,"w") as pf:
+            pf.write("company_number,ceased_on,effective_from,name\n")
+            for prev in prev_companies:
+                pf.write(f"{company_num},{prev['ceased_on']},{prev['effective_from']},{prev['name']}\n")
 
     df = pd.json_normalize(json_object)
     
@@ -80,5 +82,11 @@ def getApiKey() -> str:
 
 
 if __name__ == '__main__':
-    company = '07496944'
+    """
+    'MAN UTD supporters club Scandinavia': 'OE025157', 
+    'Dundonald Church': '07496944'
+    'MAN UTD football club ltd': '00095489'
+    'MAN UTD ltd': '02570509'
+    """
+    company = '02570509'
     getCompanyInfo(company)
