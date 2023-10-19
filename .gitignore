@@ -10,7 +10,8 @@ __pycache__/
 /authentication.txt
 
 # Data
-/company_profile.csv
+/*.csv
+/*.json
 
 # Distribution / packaging
 .Python

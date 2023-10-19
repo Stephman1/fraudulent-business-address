@@ -11,15 +11,17 @@ import json
 import os
 from urllib.parse import urljoin
 
+
 """
-Get company profile info from CH and save it in a CSV file.
+Get company profile info from CH and save it in three CSV files:
+sic_codes.csv
+prev_companies.csv
+company_profile.csv
+The primary key is the company number.
 """
 def getCompanyInfo(company_num: str) -> any:
-    # Get api key
-    auth_file = getFileParDir("authentication.txt")
-    f = open(auth_file,'r')
-    auth_dict = json.loads(f.read())
-    username = auth_dict['api_key']
+
+    username = getApiKey()
 
     company_data = requests.get(
         url=urljoin('https://api.company-information.service.gov.uk/company/',company_num),
@@ -27,13 +29,37 @@ def getCompanyInfo(company_num: str) -> any:
     )
 
     json_object = json.loads(company_data.text)
+    
+    # Get sic codes
+    sic_codes = json_object['sic_codes']
+    
+    sic_file = getFileParDir('sic_codes.csv')
+    
+    with open(sic_file,"w") as sf:
+        sf.write("company_number,sic_codes\n")
+        for sic in sic_codes:
+            sf.write(f"{company_num},{sic}\n")
+            
+    # Get previous company names
+    prev_companies = json_object['previous_company_names']
+    
+    prev_file = getFileParDir('prev_companies.csv')
+    
+    with open(prev_file,"w") as pf:
+        pf.write("company_number,ceased_on,effective_from,name\n")
+        for prev in prev_companies:
+            pf.write(f"{company_num},{prev['ceased_on']},{prev['effective_from']},{prev['name']}\n")
 
     df = pd.json_normalize(json_object)
     
-    data_file = getFileParDir("company_profile.csv")
-
-    df.to_csv(data_file, index=False)
+    # Exclude sic codes and previous company names
+    mod_df = df.loc[:, ~df.columns.isin(['sic_codes', 'previous_company_names'])]
     
+    data_file = getFileParDir('company_profile.csv')
+
+    mod_df.to_csv(data_file, index=False)
+
+
 """
 Get the full path of a file in the parent directory.
 """
@@ -41,8 +67,18 @@ def getFileParDir(file_name: str) -> str:
     parent_fp = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
     full_fp = os.path.join(parent_fp, file_name)
     return full_fp
-    
+
+
+"""
+Get CH authentication key.
+"""
+def getApiKey() -> str:
+    auth_file = getFileParDir('authentication.txt')
+    with open(auth_file,'r') as f:
+        auth_dict = json.loads(f.read())
+    return auth_dict['api_key']
+
+
 if __name__ == '__main__':
     company = '07496944'
-    # Put company profile data into CSV file.
     getCompanyInfo(company)
