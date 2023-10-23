@@ -3,7 +3,7 @@ GET request based on company number, 07496944 (THE CO-MISSION CHURCHES TRUST).
 The authentication method uses an api key stored in a text file located in the parent directory.
 Company information is saved into a CSV file.
 """
-
+import sys
 import requests
 from requests.auth import HTTPBasicAuth
 import pandas as pd
@@ -87,6 +87,7 @@ if __name__ == '__main__':
     'Dundonald Church': '07496944'
     'MAN UTD football club ltd': '00095489'
     'MAN UTD ltd': '02570509'
+    'Swaravow Ltd' = '15192197'
     """
     company = '07496944'
     getCompanyInfo(company)
