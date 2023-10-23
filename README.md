@@ -14,6 +14,10 @@ pip install -r requirements.txt
 pip freeze > requirements.txt
 
 # Do not upload virtual env folder, authentication.txt
+git status
+git pull 
+git add requirements.txt
+git commit -m "comment"
+git push 
 
 # We will use pep8 style guide for our naming convention
-
