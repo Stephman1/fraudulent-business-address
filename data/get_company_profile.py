@@ -20,7 +20,6 @@ company_profile.csv
 The primary key is the company number.
 """
 def getCompanyInfo(company_num: str) -> any:
-
     username = getApiKey()
 
     company_data = requests.get(
@@ -34,23 +33,13 @@ def getCompanyInfo(company_num: str) -> any:
     sic_codes = json_object.get('sic_codes')
     
     if not (sic_codes is None):
-        sic_file = getFileParDir('sic_codes.csv')
-    
-        with open(sic_file,"w") as sf:
-            sf.write("company_number,sic_codes\n")
-            for sic in sic_codes:
-                sf.write(f"{company_num},{sic}\n")
+        getSICCodes(sic_codes,company_num)
             
     # Get previous company names
     prev_companies = json_object.get('previous_company_names')
     
     if not (prev_companies is None):
-        prev_file = getFileParDir('prev_companies.csv')
-    
-        with open(prev_file,"w") as pf:
-            pf.write("company_number,ceased_on,effective_from,name\n")
-            for prev in prev_companies:
-                pf.write(f"{company_num},{prev.get('ceased_on')},{prev.get('effective_from')},{prev.get('name')}\n")
+        getPreviousCompanies(prev_companies, company_num)
 
     df = pd.json_normalize(json_object)
     
@@ -60,6 +49,30 @@ def getCompanyInfo(company_num: str) -> any:
     data_file = getFileParDir('company_profile.csv')
 
     mod_df.to_csv(data_file, index=False)
+
+
+"""
+Get SIC codes
+"""
+def getSICCodes(sic_codes: any, company_num: str) -> any:
+    sic_file = getFileParDir('sic_codes.csv')
+    
+    with open(sic_file,"w") as sf:
+        sf.write("company_number,sic_codes\n")
+        for sic in sic_codes:
+            sf.write(f"{company_num},{sic}\n")
+
+
+"""
+Get previous companies
+"""
+def getPreviousCompanies(prev_companies: any, company_num: str) -> any:
+    prev_file = getFileParDir('prev_companies.csv')
+    
+    with open(prev_file,"w") as pf:
+        pf.write("company_number,ceased_on,effective_from,name\n")
+        for prev in prev_companies:
+            pf.write(f"{company_num},{prev.get('ceased_on')},{prev.get('effective_from')},{prev.get('name')}\n")
 
 
 """
