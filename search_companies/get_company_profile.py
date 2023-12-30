@@ -130,6 +130,7 @@ class CompanyInfoRetriever():
     def setAuthenticationFilePath(self, auth_fp: any) -> any:
         self.api_key = self.getApiKey(auth_fp)
 
+
 """
 Run the program to return company information using the Companies House API.
 """
