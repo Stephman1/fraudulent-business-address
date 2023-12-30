@@ -53,7 +53,7 @@ class CompanyInfoRetriever():
         # Exclude sic codes and previous company names
         mod_df = df.loc[:, ~df.columns.isin(['sic_codes', 'previous_company_names'])]
         
-        data_file = self.getFileParDir('company_profile.csv')
+        data_file = self.getFileParDir(self.company_num + '_company_profile.csv')
 
         mod_df.to_csv(data_file, index=False)
 
@@ -62,7 +62,7 @@ class CompanyInfoRetriever():
     Get SIC codes
     """
     def getSICCodes(self, sic_codes: any, company_num: str) -> any:
-        sic_file = self.getFileParDir('sic_codes.csv')
+        sic_file = self.getFileParDir(self.company_num + '_sic_codes.csv')
         
         with open(sic_file,"w") as sf:
             sf.write("company_number,sic_codes\n")
@@ -74,7 +74,7 @@ class CompanyInfoRetriever():
     Get previous companies
     """
     def getPreviousCompanies(self, prev_companies: any, company_num: str) -> any:
-        prev_file = self.getFileParDir('prev_companies.csv')
+        prev_file = self.getFileParDir(self.company_num + '_prev_companies.csv')
         
         with open(prev_file,"w") as pf:
             pf.write("company_number,ceased_on,effective_from,name\n")
@@ -102,6 +102,18 @@ class CompanyInfoRetriever():
         parent_dir = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
         full_fp = os.path.join(parent_dir, file_name)
         return full_fp
+    
+    """
+    Change the company number.
+    """
+    def setCompanyNumber(self, company_number: str) -> any:
+        self.company_num = company_number
+
+    """
+    Change the api key by entering a new file path for the authentication file.    
+    """
+    def setAuthenticationFilePath(self, auth_fp: any) -> any:
+        self.api_key = self.getApiKey(auth_fp)
 
 """
 Run the program to return company information using the Companies House API.
