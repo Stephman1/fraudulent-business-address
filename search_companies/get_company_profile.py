@@ -53,7 +53,7 @@ class CompanyInfoRetriever():
         # Exclude sic codes and previous company names
         mod_df = df.loc[:, ~df.columns.isin(['sic_codes', 'previous_company_names'])]
         
-        data_file = self.getFileParDir(self.company_num + '_company_profile.csv')
+        data_file = self.getDataFolderLocation(self.company_num + '_company_profile.csv')
 
         mod_df.to_csv(data_file, index=False)
 
@@ -62,7 +62,7 @@ class CompanyInfoRetriever():
     Get SIC codes
     """
     def getSICCodes(self, sic_codes: any, company_num: str) -> any:
-        sic_file = self.getFileParDir(self.company_num + '_sic_codes.csv')
+        sic_file = self.getDataFolderLocation(self.company_num + '_sic_codes.csv')
         
         with open(sic_file,"w") as sf:
             sf.write("company_number,sic_codes\n")
@@ -74,7 +74,7 @@ class CompanyInfoRetriever():
     Get previous companies
     """
     def getPreviousCompanies(self, prev_companies: any, company_num: str) -> any:
-        prev_file = self.getFileParDir(self.company_num + '_prev_companies.csv')
+        prev_file = self.getDataFolderLocation(self.company_num + '_prev_companies.csv')
         
         with open(prev_file,"w") as pf:
             pf.write("company_number,ceased_on,effective_from,name\n")
@@ -104,6 +104,21 @@ class CompanyInfoRetriever():
         return full_fp
     
     """
+    Get the location of the data folder or create it if it doesn't exist.
+    """
+    def getDataFolderLocation(self, file_name: str, folder_name: str = "data") -> str:
+        parent_dir = os.path.abspath(os.path.join(os.pardir, os.getcwd()))
+        data_folder = os.path.join(parent_dir, folder_name)
+        
+        # Create the 'data' folder if it doesn't exist
+        if not os.path.exists(data_folder):
+            os.makedirs(data_folder)
+
+        full_fp = os.path.join(data_folder, file_name)
+        return full_fp
+    
+    
+    """
     Change the company number.
     """
     def setCompanyNumber(self, company_number: str) -> any:
@@ -119,25 +134,45 @@ class CompanyInfoRetriever():
 Run the program to return company information using the Companies House API.
 """
 def main():
+    # The first time the user retrieves company information
+    first_company = True
+    company_info_retriever = None
     while True:
         company_number = input("Enter the company number: ")
         print("You entered:", company_number)
         company_number = company_number.strip()
         
         if not company_number.isalnum():
-           print("This company number does not look valid. Please retry.") 
+           print("This company number does not look valid. Please retry.")
         else:
-            authentication_fp = input(f"Enter the full path of the authentication file or leave blank if it is in the "
-                                      f"parent directory and named authenticaton.txt: ")
-            print("You entered:", authentication_fp)
-            authentication_fp = authentication_fp.strip()
-            if not authentication_fp:
-                company_info_retriever = CompanyInfoRetriever(company_number) 
+            if first_company:
+                company_info_retriever = initialInfoRetrieval(company_number)
+                first_company = False
             else:
-                company_info_retriever = CompanyInfoRetriever(company_number,authentication_fp)
-            company_info_retriever.getCompanyInfo()
-            return
+                company_info_retriever.setCompanyNumber(company_number)
+                company_info_retriever.getCompanyInfo()
+            continue_or_exit = input(f"Would you like to retrieve information for another company? Enter Yes to "
+                                        f"continue searching or leave blank to exit the program: ")
+            print("You entered:", continue_or_exit)
+            continue_or_exit = continue_or_exit.strip().lower()
+            if (continue_or_exit == "yes" or continue_or_exit == "y"):
+                continue
+            else:
+                return
 
+
+def initialInfoRetrieval(company_num: str) -> CompanyInfoRetriever:
+    authentication_fp = input(f"Enter the full path of the authentication file or leave blank if it is in the "
+                                      f"parent directory and named authenticaton.txt: ")
+    print("You entered:", authentication_fp)
+    authentication_fp = authentication_fp.strip()
+    if not authentication_fp:
+        company_info_retriever = CompanyInfoRetriever(company_num) 
+    else:
+        company_info_retriever = CompanyInfoRetriever(company_num,authentication_fp)
+    company_info_retriever.getCompanyInfo()
+    return company_info_retriever
+    
 
 if __name__ == '__main__':
     """
