@@ -220,9 +220,10 @@ class CompanyInfo():
         with open(self.getDataFolderLocation(f"{self._company_number}_officers.csv"), "w", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(["company_number", "officer_surname", "officer_forename", "officer_other_forenames", 
-                                 "officer_role", "nationality", "dob_month", "dob_year", "premises", "address_line_1", 
-                                 "postal_code", "locality", "country", "country_of_residence", "occupation", 
-                                 "appointments", "officer_id", "appointment_kind", "is_corporate_officer", "total_company_appointments"])
+                                 "officer_role", "nationality", "appointed_on", "dob_month", "dob_year", "premises",
+                                 "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
+                                 "occupation", "appointments", "officer_id", "appointment_kind", "is_corporate_officer", 
+                                 "total_company_appointments",])
 
             for officer in officers:
                 officer_name = officer.get('name')
@@ -244,6 +245,7 @@ class CompanyInfo():
                     self._officers[officer_name] = {
                         'officer_role': str(officer.get('officer_role', '')),
                         'nationality': str(officer.get('nationality', '')),
+                        'appointed_on': str(officer.get('appointed_on', '')),
                         'date_of_birth_month': int(officer.get('date_of_birth', {}).get('month', 0)),
                         'date_of_birth_year': int(officer.get('date_of_birth', {}).get('year', 0)),
                         'address_premises': str(officer.get('address', {}).get('premises', '')),
@@ -260,7 +262,7 @@ class CompanyInfo():
                         'officer_other_forenames': officer_other_forenames,
                     }
                     # Export appointments data for all company officers to a csv file. Three fields will be saved in the class.
-                    appointments_fields = self.getOfficerAppointments(appointments)
+                    appointments_fields = self.getOfficerAppointments(appointments, officer_id)
                     self._officers[officer_name]['appointment_kind'] = str(appointments_fields.get('kind', ''))
                     self.officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
                     self.officers[officer_name]['total_company_appointments'] = int(appointments_fields.get('total_results', 0))
@@ -273,6 +275,7 @@ class CompanyInfo():
                         self._officers[officer_name]['officer_other_forenames'],
                         self._officers[officer_name]['officer_role'],
                         self._officers[officer_name]['nationality'],
+                        self._officers[officer_name]['appointed_on'],
                         self._officers[officer_name]['date_of_birth_month'],
                         self._officers[officer_name]['date_of_birth_year'],
                         self._officers[officer_name]['address_premises'],
@@ -291,7 +294,7 @@ class CompanyInfo():
                 else:
                     print("Warning: Officer name is None.")
                     
-    def getOfficerAppointments(self, appointments_link: str) -> dict:
+    def getOfficerAppointments(self, appointments_link: str, officer_id: str) -> dict:
         """
         Get officer appointments and export to a csv file.
         
@@ -301,10 +304,20 @@ class CompanyInfo():
         appointments_url = urljoin(self._base_url, appointments_link)
         appointments = self.getChData(appointments_url)
         
-        #with open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "w", newline='') as csv_file:
-        #    csv_writer = csv.writer(csv_file)
-        #    csv_writer.writerow(["officer_id", ])
-            
+        with open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(["officer_id", "company_number", "company_name", "company_status", "officer_role", 
+                                 "appointed_on"])
+            items = appointments.get('items', [])
+            for item in items:
+                csv_writer.writerow([
+                    officer_id,
+                    item.get('appointed_to', {}).get('company_number', ''),
+                    item.get('appointed_to', {}).get('company_name', ''),
+                    item.get('appointed_to', {}).get('company_status', ''),
+                    item.get('officer_role', ''),
+                    item.get('appointed_on', ''),
+                ])
             
         return dict({
             'kind': appointments.get('kind', ''), 
