@@ -17,8 +17,8 @@ class CompanyInfo():
     
     def __init__(self, company_number: str, authentication_fp=None):
         self._company_number = company_number
-        base_url = 'https://api.company-information.service.gov.uk/'
-        self._company_url = urljoin(base_url + 'company/', str(self._company_number))
+        self._base_url = 'https://api.company-information.service.gov.uk/'
+        self._company_url = urljoin(self.base_url + 'company/', str(self._company_number))
         
         if authentication_fp is None:
             self.__api_key = self.getApiKey()
@@ -28,10 +28,10 @@ class CompanyInfo():
         company_data = self.getChData(self._company_url)
         # Links
         links = company_data.get('links')
-        self._officers_url = urljoin(base_url, links.get('officers'))
-        self._filing_history_url = urljoin(base_url, links.get('filing_history')) 
-        self._charges_url = urljoin(base_url, links.get('charges')) 
-        self._persons_significant_control_url = urljoin(base_url, links.get('persons_with_significant_control_statements'))
+        self._officers_url = urljoin(self._base_url, links.get('officers'))
+        self._filing_history_url = urljoin(self._base_url, links.get('filing_history')) 
+        self._charges_url = urljoin(self._base_url, links.get('charges')) 
+        self._persons_significant_control_url = urljoin(self._base_url, links.get('persons_with_significant_control_statements'))
         # Company info
         self._company_status = str(company_data.get('company_status', ''))
         self._company_name = str(company_data.get('company_name', ''))
@@ -128,6 +128,10 @@ class CompanyInfo():
     @property
     def charges_url(self):
         return self._charges_url
+    
+    @property
+    def base_url(self):
+        return self._base_url
 
     @property
     def persons_significant_control_url(self):
@@ -215,14 +219,28 @@ class CompanyInfo():
 
         with open(self.getDataFolderLocation(f"{self._company_number}_officers.csv"), "w", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["company_number", "officer_name", "officer_role", "nationality", "dob_month", "dob_year",
-                                "premises", "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
-                                "occupation", "appointments"])
+            csv_writer.writerow(["company_number", "officer_surname", "officer_forename", "officer_other_forenames", 
+                                 "officer_role", "nationality", "dob_month", "dob_year", "premises", "address_line_1", 
+                                 "postal_code", "locality", "country", "country_of_residence", "occupation", 
+                                 "appointments", "officer_id"])
 
             for officer in officers:
                 officer_name = officer.get('name')
                 if officer_name is not None:
                     officer_name = str(officer_name)
+                    officer_names = officer_name.split(',')
+                    officer_surname = officer_names[0].strip()
+                    officer_forenames = officer_names[1].strip().split(' ',1)
+                    officer_forename = officer_forenames[0]
+                    if len(officer_forenames) == 1:
+                        officer_other_forenames = None
+                    else:
+                       officer_other_forenames = officer_forenames[1] 
+                    appointments = str(officer.get('links', {}).get('officer', {}).get('appointments', ''))
+                    if appointments != '':
+                        officer_id = appointments.split('/')[2]
+                    else:
+                        officer_id = None
                     self._officers[officer_name] = {
                         'officer_role': str(officer.get('officer_role')),
                         'nationality': str(officer.get('nationality')),
@@ -235,12 +253,18 @@ class CompanyInfo():
                         'address_country': str(officer.get('address', {}).get('country', '')),
                         'occupation': str(officer.get('occupation', '')),
                         'country_of_residence': str(officer.get('country_of_residence')),
-                        'appointments': str(officer.get('links', {}).get('officer', {}).get('appointments', ''))
+                        'appointments': appointments,
+                        'officer_id': officer_id,
+                        'officer_surname': officer_surname,
+                        'officer_forename': officer_forename,
+                        'officer_other_forenames': officer_other_forenames,
                     }
                     # Write data to CSV
                     csv_writer.writerow([
                         self._company_number,
-                        officer_name,
+                        self._officers[officer_name]['officer_surname'],
+                        self._officers[officer_name]['officer_forename'],
+                        self._officers[officer_name]['officer_other_forenames'],
                         self._officers[officer_name]['officer_role'],
                         self._officers[officer_name]['nationality'],
                         self._officers[officer_name]['date_of_birth_month'],
@@ -252,15 +276,30 @@ class CompanyInfo():
                         self._officers[officer_name]['address_country'],
                         self._officers[officer_name]['country_of_residence'],
                         self._officers[officer_name]['occupation'],
-                        self._officers[officer_name]['appointments']
+                        self._officers[officer_name]['appointments'],
+                        self._officers[officer_name]['officer_id'],
                     ])
                 else:
                     print("Warning: Officer name is None.")
+                    
+    def getOfficerAppointments(self, appointments_link: str) -> any:
+        """
+        Get officer appointments and export to a csv file.
+        
+        Returns:
+            any: void
+        """
+        appointments_url = urljoin(self._base_url, appointments_link)
+        appointments = self.getChData(appointments_url)
+        return appointments
 
 
     def getApiKey(self, authentication_fp=None) -> str:
         """
         Get CH authentication key.
+        
+        Returns:
+            str: API key for Companies House account
         """
         if authentication_fp is None:
             auth_file = self.getFileParDir('authentication.txt')
@@ -269,7 +308,6 @@ class CompanyInfo():
         with open(auth_file,'r') as f:
             auth_dict = json.loads(f.read())
         return auth_dict['api_key']
-
 
     
     def getFileParDir(self, file_name: str) -> str:
@@ -294,7 +332,6 @@ class CompanyInfo():
 
         full_fp = os.path.join(data_folder, file_name)
         return full_fp
-
 
     
     def setAuthenticationFilePath(self, auth_fp: any) -> any:
@@ -325,5 +362,6 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    man_utd = CompanyInfo('07496944')
-    man_utd.exportCompanyInfo()
+    company_info = CompanyInfo('OE025157')
+    company_info.exportCompanyInfo()
+    # print(company_info.getOfficerAppointments('/officers/gZNyeqzNhOpLAyIblbbFf4MvoDM/appointments'))
