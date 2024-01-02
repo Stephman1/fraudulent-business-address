@@ -216,7 +216,8 @@ class CompanyInfo():
         with open(self.getDataFolderLocation(f"{self._company_number}_officers.csv"), "w", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(["company_number", "officer_name", "officer_role", "nationality", "dob_month", "dob_year",
-                                "address_line_1", "postal_code", "locality", "country", "country_of_residence", "occupation", "appointments"])
+                                "premises", "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
+                                "occupation", "appointments"])
 
             for officer in officers:
                 officer_name = officer.get('name')
@@ -227,6 +228,7 @@ class CompanyInfo():
                         'nationality': str(officer.get('nationality')),
                         'date_of_birth_month': int(officer.get('date_of_birth', {}).get('month', 0)),
                         'date_of_birth_year': int(officer.get('date_of_birth', {}).get('year', 0)),
+                        'address_premises': str(officer.get('address', {}).get('premises', '')),
                         'address_address_line_1': str(officer.get('address', {}).get('address_line_1', '')),
                         'address_postal_code': str(officer.get('address', {}).get('postal_code', '')),
                         'address_locality': str(officer.get('address', {}).get('locality', '')),
@@ -243,6 +245,7 @@ class CompanyInfo():
                         self._officers[officer_name]['nationality'],
                         self._officers[officer_name]['date_of_birth_month'],
                         self._officers[officer_name]['date_of_birth_year'],
+                        self.officers[officer_name]['address_premises'],
                         self._officers[officer_name]['address_address_line_1'],
                         self._officers[officer_name]['address_postal_code'],
                         self._officers[officer_name]['address_locality'],
@@ -322,5 +325,5 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    man_utd = CompanyInfo('OE025157')
+    man_utd = CompanyInfo('07496944')
     man_utd.exportCompanyInfo()
