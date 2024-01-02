@@ -224,7 +224,12 @@ class CompanyInfo():
                                  "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
                                  "occupation", "appointments", "officer_id", "appointment_kind", "is_corporate_officer", 
                                  "total_company_appointments",])
-
+            # Header for officers' appointments csv file
+            appointments_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='')
+            appointments_csv_writer = csv.writer(appointments_csv_file)
+            appointments_csv_writer.writerow(["officer_id", "company_number", "company_name", "company_status", "officer_role", "appointed_on"])
+            appointments_csv_file.close()
+            
             for officer in officers:
                 officer_name = officer.get('name')
                 if officer_name is not None:
@@ -262,7 +267,9 @@ class CompanyInfo():
                         'officer_other_forenames': officer_other_forenames,
                     }
                     # Export appointments data for all company officers to a csv file. Three fields will be saved in the class.
-                    appointments_fields = self.getOfficerAppointments(appointments, officer_id)
+                    appointments_url = urljoin(self._base_url, appointments)
+                    appointments_data = self.getChData(appointments_url)
+                    appointments_fields = self.getOfficerAppointments(appointments_data, officer_id,)
                     self._officers[officer_name]['appointment_kind'] = str(appointments_fields.get('kind', ''))
                     self.officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
                     self.officers[officer_name]['total_company_appointments'] = int(appointments_fields.get('total_results', 0))
@@ -294,35 +301,30 @@ class CompanyInfo():
                 else:
                     print("Warning: Officer name is None.")
                     
-    def getOfficerAppointments(self, appointments_link: str, officer_id: str) -> dict:
+    def getOfficerAppointments(self, appointments_data: dict, officer_id: str) -> dict:
         """
         Get officer appointments and export to a csv file.
         
         Returns:
             dict: total appointments, is corporate officer, and kind of appointment
         """
-        appointments_url = urljoin(self._base_url, appointments_link)
-        appointments = self.getChData(appointments_url)
-        
-        with open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='') as csv_file:
-            csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["officer_id", "company_number", "company_name", "company_status", "officer_role", 
-                                 "appointed_on"])
-            items = appointments.get('items', [])
-            for item in items:
-                csv_writer.writerow([
-                    officer_id,
-                    item.get('appointed_to', {}).get('company_number', ''),
-                    item.get('appointed_to', {}).get('company_name', ''),
-                    item.get('appointed_to', {}).get('company_status', ''),
-                    item.get('officer_role', ''),
-                    item.get('appointed_on', ''),
-                ])
-            
+        appointments_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='')
+        appointments_csv_writer = csv.writer(appointments_csv_file)
+        items = appointments_data.get('items', [])
+        for item in items:
+            appointments_csv_writer.writerow([
+                officer_id,
+                item.get('appointed_to', {}).get('company_number', ''),
+                item.get('appointed_to', {}).get('company_name', ''),
+                item.get('appointed_to', {}).get('company_status', ''),
+                item.get('officer_role', ''),
+                item.get('appointed_on', ''),
+            ])
+        appointments_csv_file.close()
         return dict({
-            'kind': appointments.get('kind', ''), 
-            'is_corporate_officer': appointments.get('is_corporate_officer', None), 
-            'total_results': appointments.get('total_results', None)
+            'kind': appointments_data.get('kind', ''), 
+            'is_corporate_officer': appointments_data.get('is_corporate_officer', None), 
+            'total_results': appointments_data.get('total_results', None)
             }) 
 
 
@@ -394,5 +396,5 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('15192197')
+    company_info = CompanyInfo('OE025157')
     company_info.exportCompanyInfo()
