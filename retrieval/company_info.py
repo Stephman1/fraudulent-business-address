@@ -3,7 +3,6 @@ GET request based on company number.
 The authentication method uses an api key stored in a text file located in the parent directory.
 Company information is exported to CSV files.
 """
-import sys
 import requests
 from requests.auth import HTTPBasicAuth
 import pandas as pd
@@ -11,21 +10,22 @@ import json
 import os
 import csv
 from urllib.parse import urljoin
+from companies_house_api import ChAPI
 
 
 class CompanyInfo():
     
-    def __init__(self, company_number: str, authentication_fp=None):
+    def __init__(self, company_number: str, authentication_fp=None) -> None:
         self._company_number = company_number
         self._base_url = 'https://api.company-information.service.gov.uk/'
         self._company_url = urljoin(self.base_url + 'company/', str(self._company_number))
         
         if authentication_fp is None:
-            self.__api_key = self.getApiKey()
+            self.__api_key = ChAPI.getApiKey()
         else:
-            self.__api_key = self.getApiKey(authentication_fp)
+            self.__api_key = ChAPI.getApiKey(authentication_fp)
         
-        company_data = self.getChData(self._company_url)
+        company_data = ChAPI.getChData(self._company_url, self.__api_key)
         # Links
         links = company_data.get('links')
         self._officers_url = urljoin(self._base_url, links.get('officers'))
@@ -54,87 +54,87 @@ class CompanyInfo():
         
         
     @property
-    def company_status(self):
+    def company_status(self) -> str:
         return self._company_status
 
     @property
-    def company_name(self):
+    def company_name(self) -> str:
         return self._company_name
 
     @property
-    def jurisdiction(self):
+    def jurisdiction(self) -> str:
         return self._jurisdiction
 
     @property
-    def date_of_creation(self):
+    def date_of_creation(self) -> str:
         return self._date_of_creation
 
     @property
-    def has_insolvency_history(self):
+    def has_insolvency_history(self) -> bool:
         return self._has_insolvency_history
 
     @property
-    def has_charges(self):
+    def has_charges(self) -> bool:
         return self._has_charges
 
     @property
-    def has_been_liquidated(self):
+    def has_been_liquidated(self) -> bool:
         return self._has_been_liquidated
 
     @property
-    def undeliverable_registered_office_address(self):
+    def undeliverable_registered_office_address(self) -> bool:
         return self._undeliverable_registered_office_address
 
     @property
-    def registered_office_is_in_dispute(self):
+    def registered_office_is_in_dispute(self) -> bool:
         return self._registered_office_is_in_dispute
 
     @property
-    def accounts_overdue(self):
+    def accounts_overdue(self) -> bool:
         return self._accounts_overdue
 
     @property
-    def address_line_1(self):
+    def address_line_1(self) -> str:
         return self._address_line_1
 
     @property
-    def postal_code(self):
+    def postal_code(self) -> str:
         return self._postal_code
 
     @property
-    def locality(self):
+    def locality(self) -> str:
         return self._locality
 
     @property
-    def country(self):
+    def country(self) -> str:
         return self._country
     
     @property
-    def company_number(self):
+    def company_number(self) -> str:
         return self._company_number
     
     @property
-    def company_url(self):
+    def company_url(self) -> str:
         return self._company_url
     
     @property 
-    def officers_url(self):
+    def officers_url(self) -> str:
         return self._officers_url
 
     @property
-    def filing_history_url(self):
+    def filing_history_url(self) -> str:
         return self._filing_history_url
 
     @property
-    def charges_url(self):
+    def charges_url(self) -> str:
         return self._charges_url
     
     @property
-    def base_url(self):
+    def base_url(self) -> str:
         return self._base_url
 
     @property
-    def persons_significant_control_url(self):
+    def persons_significant_control_url(self) -> str:
         return self._persons_significant_control_url
     
     @property
@@ -142,11 +142,11 @@ class CompanyInfo():
         return "Access denied"
     
     @property
-    def officers(self):
+    def officers(self) -> dict:
         return self._officers
         
         
-    def exportCompanyInfo(self) -> any:
+    def exportCompanyInfo(self) -> None:
         """
         Get company profile info from CH and export it to CSV files:
         {company_number}_sic_codes.csv
@@ -155,7 +155,7 @@ class CompanyInfo():
         {company_number}_officers.csv
         The primary key is the company number.
         """
-        company_data = self.getChData(self._company_url)
+        company_data = ChAPI.getChData(self._company_url, self.__api_key)
         
         # Get sic codes
         sic_codes = company_data.get('sic_codes')
@@ -182,7 +182,7 @@ class CompanyInfo():
         mod_df.to_csv(data_file, index=False)
         
         
-    def getSICCodes(self, sic_codes: any, company_num: str) -> any:
+    def getSICCodes(self, sic_codes: any, company_num: str) -> None:
         """
         Get SIC codes
         """
@@ -194,7 +194,7 @@ class CompanyInfo():
                 sf.write(f"{company_num},{sic}\n")
 
 
-    def getPreviousCompanies(self, prev_companies: any, company_num: str) -> any:
+    def getPreviousCompanies(self, prev_companies: any, company_num: str) -> None:
         """
         Get previous companies
         """
@@ -206,12 +206,12 @@ class CompanyInfo():
                 pf.write(f"{company_num},{prev.get('ceased_on')},{prev.get('effective_from')},{prev.get('name')}\n")
                 
                 
-    def getCompanyOfficers(self) -> any:
+    def getCompanyOfficers(self) -> None:
         """
         Get company officers
         """
         # Fetch new officers data
-        officers_data = self.getChData(self._officers_url)
+        officers_data = ChAPI.getChData(self._officers_url, self.__api_key)
         officers = officers_data.get('items')
 
         # Update the _officers attribute with the new data
@@ -268,7 +268,7 @@ class CompanyInfo():
                     }
                     # Export appointments data for all company officers to a csv file. Three fields will be saved in the class.
                     appointments_url = urljoin(self._base_url, appointments)
-                    appointments_data = self.getChData(appointments_url)
+                    appointments_data = ChAPI.getChData(appointments_url, self.__api_key)
                     appointments_fields = self.getOfficerAppointments(appointments_data, officer_id,)
                     self._officers[officer_name]['appointment_kind'] = str(appointments_fields.get('kind', ''))
                     self.officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
@@ -326,31 +326,6 @@ class CompanyInfo():
             'is_corporate_officer': appointments_data.get('is_corporate_officer', None), 
             'total_results': appointments_data.get('total_results', None)
             }) 
-
-
-    def getApiKey(self, authentication_fp=None) -> str:
-        """
-        Get CH authentication key.
-        
-        Returns:
-            str: API key for Companies House account
-        """
-        if authentication_fp is None:
-            auth_file = self.getFileParDir('authentication.txt')
-        else:
-            auth_file = authentication_fp
-        with open(auth_file,'r') as f:
-            auth_dict = json.loads(f.read())
-        return auth_dict['api_key']
-
-    
-    def getFileParDir(self, file_name: str) -> str:
-        """
-        Get the full path of a file in the parent directory.
-        """
-        parent_dir = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
-        full_fp = os.path.join(parent_dir, file_name)
-        return full_fp
     
     
     def getDataFolderLocation(self, file_name: str, folder_name: str = "data") -> str:
@@ -368,24 +343,11 @@ class CompanyInfo():
         return full_fp
 
     
-    def setAuthenticationFilePath(self, auth_fp: any) -> any:
+    def setAuthenticationFilePath(self, auth_fp: any) ->None:
         """
         Change the api key by entering a new file path for the authentication file.    
         """
-        self.__api_key = self.getApiKey(auth_fp)
-
-
-    def getChData(self, url: str) -> dict:
-        """
-        Hits the Companies House API and returns data as a dictionary.
-        """
-        try:
-            response = requests.get(url=url, auth=HTTPBasicAuth(self.__api_key, ''))
-            response.raise_for_status()  # Raise an HTTPError for bad responses
-            return response.json()
-        except requests.RequestException as e:
-            print(f"Error during API request: {e}")
-            return {}
+        self.__api_key = ChAPI.getApiKey(auth_fp)
     
 
 if __name__ == '__main__':
@@ -396,5 +358,5 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('OE025157')
+    company_info = CompanyInfo('15192197')
     company_info.exportCompanyInfo()
