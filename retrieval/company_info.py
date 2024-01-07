@@ -3,14 +3,12 @@ GET request based on company number.
 The authentication method uses an api key stored in a text file located in the parent directory.
 Company information is exported to CSV files.
 """
-import requests
-from requests.auth import HTTPBasicAuth
 import pandas as pd
-import json
 import os
 import csv
 from urllib.parse import urljoin
 from companies_house_api import ChAPI
+import json
 
 
 class CompanyInfo():
@@ -28,10 +26,10 @@ class CompanyInfo():
         company_data = ChAPI.getChData(self._company_url, self.__api_key)
         # Links
         links = company_data.get('links')
-        self._officers_url = urljoin(self._base_url, links.get('officers'))
-        self._filing_history_url = urljoin(self._base_url, links.get('filing_history')) 
-        self._charges_url = urljoin(self._base_url, links.get('charges')) 
-        self._persons_significant_control_url = urljoin(self._base_url, links.get('persons_with_significant_control_statements'))
+        self._officers_url = urljoin(self._base_url, links.get('officers', ''))
+        self._filing_history_url = urljoin(self._base_url, links.get('filing_history', '')) 
+        self._charges_url = urljoin(self._base_url, links.get('charges', '')) 
+        self._persons_significant_control_url = urljoin(self._base_url, links.get('persons_with_significant_control', ''))
         # Company info
         self._company_status = str(company_data.get('company_status', ''))
         self._company_name = str(company_data.get('company_name', ''))
@@ -170,9 +168,6 @@ class CompanyInfo():
             self.getPreviousCompanies(prev_companies,self._company_number)
 
         df = pd.json_normalize(company_data)
-        
-        # Get officers and appointments
-        self.getCompanyOfficers()
         
         # Exclude sic codes and previous company names
         mod_df = df.loc[:, ~df.columns.isin(['sic_codes', 'previous_company_names'])]
@@ -325,8 +320,95 @@ class CompanyInfo():
             'kind': appointments_data.get('kind', ''), 
             'is_corporate_officer': appointments_data.get('is_corporate_officer', None), 
             'total_results': appointments_data.get('total_results', None)
-            }) 
+            })
+        
     
+    def getPersonsSignificantControl(self):
+        """
+        Get persons with significant control of the company.
+        """
+        if self._base_url == self._persons_significant_control_url:
+            # There is no persons with significant control url link
+            return
+        persons = ChAPI.getChData(self._persons_significant_control_url, self.__api_key)
+        significant_persons_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_significant_persons.csv"), "w", newline='')
+        significant_persons_csv_writer = csv.writer(significant_persons_csv_file)
+        significant_persons_csv_writer.writerow([
+            "company_number",
+            "name",
+            "title",
+            "surname",
+            "forename",
+            "other_forenames",
+            "dob_month",
+            "dob_year",
+            "kind",
+            "notified_on",
+            "nationality",
+            "country_of_residence",
+            "address_premises",
+            "address_line_1",
+            "address_line_2",
+            "address_locality",
+            "address_postal_code",
+            "address_country",
+            "etag",
+            "registration_number",
+            "legal_form",
+            "legal_authority",
+            "country_registered",
+            "place_registered",
+            ])
+        # A separate file/table is needed to list each person's natures of control
+        natures_of_control_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_natures_of_control.csv"), "a", newline='')
+        natures_of_control_csv_writer = csv.writer(natures_of_control_csv_file)
+        natures_of_control_csv_writer.writerow([
+            "etag",
+            "nature_of_control"
+        ])
+        
+        items = persons.get('items', [])
+        for item in items:
+            etag = item.get('etag', '') 
+            significant_persons_csv_writer.writerow([
+                self._company_number,
+                item.get('name', ''),
+                item.get('name_elements', {}).get('title', ''),
+                item.get('name_elements', {}).get('surname', ''),
+                item.get('name_elements', {}).get('forename', ''),
+                item.get('name_elements', {}).get('other_forenames', ''),
+                item.get('date_of_birth', {}).get('month', ''),
+                item.get('date_of_birth', {}).get('year', ''),
+                item.get('kind', ''),
+                item.get('notified_on', ''),
+                item.get('nationality', ''),
+                item.get('country_of_residence', ''),
+                item.get("address", {}).get('premises', ''),
+                item.get('address', {}).get('address_line_1', ''),
+                item.get('address', {}).get('address_line_2', ''),
+                item.get('address', {}).get('locality', ''),
+                item.get('address', {}).get('postal_code', ''),
+                item.get('address', {}).get('country', ''),
+                etag,
+                item.get('identification', {}).get('registration_number', ''),
+                item.get('identification', {}).get('legal_form', ''),
+                item.get('identification', {}).get('legal_authority', ''),
+                item.get('identification', {}).get('country_registered', ''),
+                item.get('identification', {}).get('place_registered', ''),
+            ])
+            natures_of_control = item.get('natures_of_control', [])
+            if not natures_of_control:
+                # There is no data on this person's natures of control
+                return
+            else:
+                for nature_of_control in natures_of_control:
+                    natures_of_control_csv_writer.writerow([
+                        etag,
+                        nature_of_control,
+                    ])
+        significant_persons_csv_file.close()
+        natures_of_control_csv_file.close()
+        
     
     def getDataFolderLocation(self, file_name: str, folder_name: str = "data") -> str:
         """
@@ -343,7 +425,7 @@ class CompanyInfo():
         return full_fp
 
     
-    def setAuthenticationFilePath(self, auth_fp: any) ->None:
+    def setAuthenticationFilePath(self, auth_fp: any) -> None:
         """
         Change the api key by entering a new file path for the authentication file.    
         """
@@ -358,5 +440,10 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('15192197')
-    company_info.exportCompanyInfo()
+    company_info = CompanyInfo('00095489')
+    # Get company information
+    #company_info.exportCompanyInfo()
+    # Get company officers and their appointments
+    #company_info.getCompanyOfficers()
+    # Get persons with significant control
+    company_info.getPersonsSignificantControl()
