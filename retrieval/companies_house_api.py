@@ -1,25 +1,24 @@
-"""
-A class for interacting with the Companies House API. 
-"""
 import requests
 from requests.auth import HTTPBasicAuth
 import os
 import json
 
-
 class ChAPI():
+    """
+    A class for interacting with the Companies House API. 
+    """
     
     def __init__(self) -> None:
         pass
     
     
     @staticmethod
-    def getChData(url: str, api_key: str) -> dict:
+    def getChData(url: str, api_key: str, params: dict = None, headers: dict = {'content-type': 'application/json'}) -> dict:
         """
         Hits the Companies House API and returns data as a dictionary.
         """
         try:
-            response = requests.get(url=url, auth=HTTPBasicAuth(api_key, ''))
+            response = requests.get(url=url, auth=HTTPBasicAuth(api_key, ''), params=params, headers=headers)
             response.raise_for_status()  # Raise an HTTPError for bad responses
             return response.json()
         except requests.RequestException as e:
@@ -28,7 +27,7 @@ class ChAPI():
         
     
     @staticmethod
-    def getApiKey(authentication_fp=None) -> str:
+    def getApiKey(authentication_fp: str = None) -> str:
         """
         Get CH authentication key.
         

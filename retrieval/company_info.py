@@ -1,8 +1,3 @@
-"""
-GET request based on company number.
-The authentication method uses an api key stored in a text file located in the parent directory.
-Company information is exported to CSV files.
-"""
 import pandas as pd
 import os
 import csv
@@ -12,11 +7,18 @@ import json
 
 
 class CompanyInfo():
+    """
+    GET request based on company number.
+    The authentication method uses an api key stored in a text file located in the parent directory.
+    Company information is exported to CSV files.
+    """
     
-    def __init__(self, company_number: str, authentication_fp=None) -> None:
+    def __init__(self, company_number: str, timestamp: str, authentication_fp=None, prefix: str = '') -> None:
         self._company_number = company_number
-        self._base_url = 'https://api.company-information.service.gov.uk/'
+        self._base_url = r'https://api.company-information.service.gov.uk/'
         self._company_url = urljoin(self.base_url + 'company/', str(self._company_number))
+        self._prefix = prefix
+        self._timestamp = timestamp
         
         if authentication_fp is None:
             self.__api_key = ChAPI.getApiKey()
@@ -142,6 +144,14 @@ class CompanyInfo():
     @property
     def officers(self) -> dict:
         return self._officers
+    
+    @property
+    def prefix(self) -> str:
+        return self._prefix
+    
+    @property
+    def timestamp(self) -> str:
+        return self._timestamp
         
         
     def exportCompanyInfo(self) -> None:
@@ -159,13 +169,13 @@ class CompanyInfo():
         sic_codes = company_data.get('sic_codes')
         
         if not sic_codes is None:
-            self.getSICCodes(sic_codes,self._company_number)
+            self.getSICCodes(sic_codes)
                 
         # Get previous company names
         prev_companies = company_data.get('previous_company_names')
         
         if not prev_companies is None:
-            self.getPreviousCompanies(prev_companies,self._company_number)
+            self.getPreviousCompanyNames(prev_companies)
 
         df = pd.json_normalize(company_data)
         
@@ -177,28 +187,30 @@ class CompanyInfo():
         mod_df.to_csv(data_file, index=False)
         
         
-    def getSICCodes(self, sic_codes: any, company_num: str) -> None:
+    def getSICCodes(self, sic_codes: list) -> None:
         """
         Get SIC codes
         """
         sic_file = self.getDataFolderLocation(f"{self._company_number}_sic_codes.csv")
         
         with open(sic_file,"w",newline='') as sf:
-            sf.write("company_number,sic_codes\n")
+            sf_writer = csv.writer(sf)
+            sf_writer.writerow(["company_number", "sic_codes"])
             for sic in sic_codes:
-                sf.write(f"{company_num},{sic}\n")
+                sf_writer.writerow([self._company_number, sic])
 
 
-    def getPreviousCompanies(self, prev_companies: any, company_num: str) -> None:
+    def getPreviousCompanyNames(self, prev_companies: list) -> None:
         """
-        Get previous companies
+        Get previous company names
         """
-        prev_file = self.getDataFolderLocation(f"{self._company_number}_prev_companies.csv")
+        prev_file = self.getDataFolderLocation(f"{self._company_number}_prev_company_names.csv")
         
         with open(prev_file,"w",newline='') as pf:
-            pf.write("company_number,ceased_on,effective_from,name\n")
+            pf_writer = csv.writer(pf)
+            pf_writer.writerow(["company_number","ceased_on","effective_from","name"])
             for prev in prev_companies:
-                pf.write(f"{company_num},{prev.get('ceased_on')},{prev.get('effective_from')},{prev.get('name')}\n")
+                pf_writer.writerow([self._company_number,prev.get('ceased_on'),prev.get('effective_from'),prev.get('name')])
                 
                 
     def getCompanyOfficers(self) -> None:
@@ -438,7 +450,7 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('02570509')
+    company_info = CompanyInfo('OE025157')
     # Get company information
     company_info.exportCompanyInfo()
     # Get company officers and their appointments
