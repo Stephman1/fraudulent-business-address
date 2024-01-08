@@ -17,8 +17,8 @@ class CompanySearch():
         self._sic_code_headers = ["company_number", "sic_codes"]
         self._previous_company_names_headers = ["company_number","ceased_on","effective_from","name"]
         self._company_officers_headers = ["company_number", "officer_surname", "officer_forename", "officer_other_forenames", 
-                                          "officer_role", "nationality", "appointed_on", "dob_month", "dob_year", "premises",
-                                          "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
+                                          "officer_name", "officer_role", "nationality", "appointed_on", "dob_month", "dob_year", 
+                                          "premises","address_line_1", "postal_code", "locality", "country", "country_of_residence", 
                                           "occupation", "appointments", "officer_id", "appointment_kind", "is_corporate_officer", 
                                           "total_company_appointments"] 
         self._officer_appointments_headers = ["officer_id", "company_number", "company_name", "company_status", "officer_role", 
@@ -57,12 +57,12 @@ class CompanySearch():
         for item in search.get('items', []):
             company_no = item.get('company_number') 
             if company_no:
-                CompanyInfo(str(company_no), timestamp, prefix=prefix)
+                CompanyInfo(str(company_no), timestamp, prefix=prefix).exportCompanyInfo()
     
     
     def insertHeaders(self, prefix: str, timestamp: str):
         # Company information
-        company_fp = ChAPI.getDataFolderLocation(prefix + '_company_profile_' + timestamp + '.csv')
+        company_fp = ChAPI.getDataFolderLocation(prefix + '_companies_' + timestamp + '.csv')
         with open(company_fp,"w",newline='') as company_file:
             company_writer = csv.writer(company_file)
             company_writer.writerow(self._company_headers)
@@ -99,4 +99,4 @@ class CompanySearch():
 
 
 if __name__ == '__main__':
-    pass
+    CompanySearch().searchAll("Swara")

@@ -169,9 +169,12 @@ class CompanyInfo():
         Get company profile info from Companies House and export it to CSV files:
         
         {prefix}_sic_codes_{timestamp}.csv,
-        {prefix}_prev_companies_{timestamp}.csv,
-        {prefix}_company_profile_{timestamp}.csv,
-        {prefix}_officers_{timestamp}.csv
+        {prefix}_previous_company_names_{timestamp}.csv,
+        {prefix}_companies_{timestamp}.csv,
+        {prefix}_company_officers_{timestamp}.csv,
+        {prefix}_persons_significant_control_{timestamp}.csv,
+        {prefix}_officer_appointments_{timestamp}.csv,
+        {prefix}_natures_of_control_{timestamp}.csv
         
         The primary key is the company number.
         """
@@ -201,15 +204,15 @@ class CompanyInfo():
         """
         Get company profile information
         """
-        company_fp = ChAPI.getDataFolderLocation(self._prefix + '_company_profile_' + self._timestamp + '.csv')
+        company_fp = ChAPI.getDataFolderLocation(self._prefix + '_companies_' + self._timestamp + '.csv')
         with open(company_fp,"a",newline='') as company_file:
             company_writer = csv.writer(company_file)
-            company_writer.writerow[self._company_number, self._company_name, self._company_status, self._company_type,
+            company_writer.writerow([self._company_number, self._company_name, self._company_status, self._company_type,
                                     self._jurisdiction, self._is_foreign_company, self._date_of_creation, self._etag,
                                     self._external_registration_number, self._address_line_1, self._locality, self._postal_code,
                                     self._country, self._accounts_overdue, self._has_been_liquidated, self._has_charges,
                                     self._has_insolvency_history, self._registered_office_is_in_dispute, 
-                                    self._undeliverable_registered_office_address]
+                                    self._undeliverable_registered_office_address])
         
         
     def getSICCodes(self, sic_codes: list) -> None:
@@ -242,7 +245,7 @@ class CompanyInfo():
         """
         # Fetch new officers data
         officers_data = ChAPI.getChData(self._officers_url, self.__api_key)
-        officers = officers_data.get('items')
+        officers = officers_data.get('items', [])
 
         # Update the _officers attribute with the new data
         self._officers = dict()
@@ -255,10 +258,15 @@ class CompanyInfo():
                 if officer_name is not None:
                     officer_name = str(officer_name)
                     officer_names = officer_name.split(',')
-                    officer_surname = officer_names[0].strip()
-                    officer_forenames = officer_names[1].strip().split(' ',1)
-                    officer_forename = officer_forenames[0]
-                    if len(officer_forenames) == 1:
+                    if len(officer_names) == 1:
+                        officer_surname = ''
+                        officer_forenames = ''
+                        officer_forename = ''
+                    else:
+                        officer_surname = officer_names[0].strip()
+                        officer_forenames = officer_names[1].strip().split(' ',1)
+                        officer_forename = officer_forenames[0]
+                    if len(officer_forenames) < 2:
                         officer_other_forenames = None
                     else:
                        officer_other_forenames = officer_forenames[1] 
@@ -300,6 +308,7 @@ class CompanyInfo():
                         self._officers[officer_name]['officer_surname'],
                         self._officers[officer_name]['officer_forename'],
                         self._officers[officer_name]['officer_other_forenames'],
+                        officer_name,
                         self._officers[officer_name]['officer_role'],
                         self._officers[officer_name]['nationality'],
                         self._officers[officer_name]['appointed_on'],
