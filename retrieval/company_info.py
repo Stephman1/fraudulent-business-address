@@ -331,83 +331,81 @@ class CompanyInfo():
             # There is no persons with significant control url link
             return
         persons = ChAPI.getChData(self._persons_significant_control_url, self.__api_key)
-        significant_persons_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_significant_persons.csv"), "w", newline='')
-        significant_persons_csv_writer = csv.writer(significant_persons_csv_file)
-        significant_persons_csv_writer.writerow([
-            "company_number",
-            "name",
-            "title",
-            "surname",
-            "forename",
-            "other_forenames",
-            "dob_month",
-            "dob_year",
-            "kind",
-            "notified_on",
-            "nationality",
-            "country_of_residence",
-            "address_premises",
-            "address_line_1",
-            "address_line_2",
-            "address_locality",
-            "address_postal_code",
-            "address_country",
-            "etag",
-            "registration_number",
-            "legal_form",
-            "legal_authority",
-            "country_registered",
-            "place_registered",
-            ])
-        # A separate file/table is needed to list each person's natures of control
-        natures_of_control_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_natures_of_control.csv"), "a", newline='')
-        natures_of_control_csv_writer = csv.writer(natures_of_control_csv_file)
-        natures_of_control_csv_writer.writerow([
-            "etag",
-            "nature_of_control"
-        ])
-        
-        items = persons.get('items', [])
-        for item in items:
-            etag = item.get('etag', '') 
+        with open(self.getDataFolderLocation(f"{self._company_number}_significant_persons.csv"), "w", newline='') as significant_persons_csv_file:
+            significant_persons_csv_writer = csv.writer(significant_persons_csv_file)
             significant_persons_csv_writer.writerow([
-                self._company_number,
-                item.get('name', ''),
-                item.get('name_elements', {}).get('title', ''),
-                item.get('name_elements', {}).get('surname', ''),
-                item.get('name_elements', {}).get('forename', ''),
-                item.get('name_elements', {}).get('other_forenames', ''),
-                item.get('date_of_birth', {}).get('month', ''),
-                item.get('date_of_birth', {}).get('year', ''),
-                item.get('kind', ''),
-                item.get('notified_on', ''),
-                item.get('nationality', ''),
-                item.get('country_of_residence', ''),
-                item.get("address", {}).get('premises', ''),
-                item.get('address', {}).get('address_line_1', ''),
-                item.get('address', {}).get('address_line_2', ''),
-                item.get('address', {}).get('locality', ''),
-                item.get('address', {}).get('postal_code', ''),
-                item.get('address', {}).get('country', ''),
-                etag,
-                item.get('identification', {}).get('registration_number', ''),
-                item.get('identification', {}).get('legal_form', ''),
-                item.get('identification', {}).get('legal_authority', ''),
-                item.get('identification', {}).get('country_registered', ''),
-                item.get('identification', {}).get('place_registered', ''),
-            ])
-            natures_of_control = item.get('natures_of_control', [])
-            if not natures_of_control:
-                # There is no data on this person's natures of control
-                return
-            else:
-                for nature_of_control in natures_of_control:
-                    natures_of_control_csv_writer.writerow([
+                "company_number",
+                "name",
+                "title",
+                "surname",
+                "forename",
+                "other_forenames",
+                "dob_month",
+                "dob_year",
+                "kind",
+                "notified_on",
+                "nationality",
+                "country_of_residence",
+                "address_premises",
+                "address_line_1",
+                "address_line_2",
+                "address_locality",
+                "address_postal_code",
+                "address_country",
+                "etag",
+                "registration_number",
+                "legal_form",
+                "legal_authority",
+                "country_registered",
+                "place_registered",
+                ])
+            # A separate file/table is needed to list each person's natures of control
+            with open(self.getDataFolderLocation(f"{self._company_number}_natures_of_control.csv"), "a", newline='') as natures_of_control_csv_file:
+                natures_of_control_csv_writer = csv.writer(natures_of_control_csv_file)
+                natures_of_control_csv_writer.writerow([
+                    "etag",
+                    "nature_of_control"
+                ])
+                
+                items = persons.get('items', [])
+                for item in items:
+                    etag = item.get('etag', '') 
+                    significant_persons_csv_writer.writerow([
+                        self._company_number,
+                        item.get('name', ''),
+                        item.get('name_elements', {}).get('title', ''),
+                        item.get('name_elements', {}).get('surname', ''),
+                        item.get('name_elements', {}).get('forename', ''),
+                        item.get('name_elements', {}).get('other_forenames', ''),
+                        item.get('date_of_birth', {}).get('month', ''),
+                        item.get('date_of_birth', {}).get('year', ''),
+                        item.get('kind', ''),
+                        item.get('notified_on', ''),
+                        item.get('nationality', ''),
+                        item.get('country_of_residence', ''),
+                        item.get("address", {}).get('premises', ''),
+                        item.get('address', {}).get('address_line_1', ''),
+                        item.get('address', {}).get('address_line_2', ''),
+                        item.get('address', {}).get('locality', ''),
+                        item.get('address', {}).get('postal_code', ''),
+                        item.get('address', {}).get('country', ''),
                         etag,
-                        nature_of_control,
+                        item.get('identification', {}).get('registration_number', ''),
+                        item.get('identification', {}).get('legal_form', ''),
+                        item.get('identification', {}).get('legal_authority', ''),
+                        item.get('identification', {}).get('country_registered', ''),
+                        item.get('identification', {}).get('place_registered', ''),
                     ])
-        significant_persons_csv_file.close()
-        natures_of_control_csv_file.close()
+                    natures_of_control = item.get('natures_of_control', [])
+                    if not natures_of_control:
+                        # There is no data on this person's natures of control
+                        return
+                    else:
+                        for nature_of_control in natures_of_control:
+                            natures_of_control_csv_writer.writerow([
+                                etag,
+                                nature_of_control,
+                            ])
         
     
     def getDataFolderLocation(self, file_name: str, folder_name: str = "data") -> str:
@@ -440,10 +438,10 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('00095489')
+    company_info = CompanyInfo('02570509')
     # Get company information
-    #company_info.exportCompanyInfo()
+    company_info.exportCompanyInfo()
     # Get company officers and their appointments
-    #company_info.getCompanyOfficers()
+    company_info.getCompanyOfficers()
     # Get persons with significant control
     company_info.getPersonsSignificantControl()
