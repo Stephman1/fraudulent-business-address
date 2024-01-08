@@ -3,8 +3,8 @@ import os
 import csv
 from urllib.parse import urljoin
 from companies_house_api import ChAPI
+from datetime import datetime
 import json
-
 
 class CompanyInfo():
     """
@@ -13,7 +13,7 @@ class CompanyInfo():
     Company information is exported to CSV files.
     """
     
-    def __init__(self, company_number: str, timestamp: str, authentication_fp=None, prefix: str = '') -> None:
+    def __init__(self, company_number: str, timestamp: str, authentication_fp: str = None, prefix: str = '') -> None:
         self._company_number = company_number
         self._base_url = r'https://api.company-information.service.gov.uk/'
         self._company_url = urljoin(self.base_url + 'company/', str(self._company_number))
@@ -25,32 +25,40 @@ class CompanyInfo():
         else:
             self.__api_key = ChAPI.getApiKey(authentication_fp)
         
-        company_data = ChAPI.getChData(self._company_url, self.__api_key)
+        self._company_data = ChAPI.getChData(self._company_url, self.__api_key)
         # Links
-        links = company_data.get('links')
+        links = self._company_data.get('links')
         self._officers_url = urljoin(self._base_url, links.get('officers', ''))
         self._filing_history_url = urljoin(self._base_url, links.get('filing_history', '')) 
         self._charges_url = urljoin(self._base_url, links.get('charges', '')) 
         self._persons_significant_control_url = urljoin(self._base_url, links.get('persons_with_significant_control', ''))
         # Company info
-        self._company_status = str(company_data.get('company_status', ''))
-        self._company_name = str(company_data.get('company_name', ''))
-        self._jurisdiction = str(company_data.get('jurisdiction', ''))
-        self._date_of_creation = str(company_data.get('date_of_creation', ''))
-        self._has_insolvency_history = bool(company_data.get('date_of_creation', None))
-        self._has_charges = bool(company_data.get('has_charges', None))
-        self._has_been_liquidated = bool(company_data.get('has_been_liquidated', None))
-        self._undeliverable_registered_office_address = bool(company_data.get('undeliverable_registered_office_address', None))
-        self._registered_office_is_in_dispute = bool(company_data.get('registered_office_is_in_dispute', None))
-        self._accounts_overdue = bool(company_data.get('accounts', {}).get('overdue', None))
+        self._company_status = str(self._company_data.get('company_status', ''))
+        self._company_name = str(self._company_data.get('company_name', ''))
+        self._jurisdiction = str(self._company_data.get('jurisdiction', ''))
+        self._date_of_creation = str(self._company_data.get('date_of_creation', ''))
+        self._has_insolvency_history = bool(self._company_data.get('date_of_creation', None))
+        self._has_charges = bool(self._company_data.get('has_charges', None))
+        self._has_been_liquidated = bool(self._company_data.get('has_been_liquidated', None))
+        self._undeliverable_registered_office_address = bool(self._company_data.get('undeliverable_registered_office_address', None))
+        self._registered_office_is_in_dispute = bool(self._company_data.get('registered_office_is_in_dispute', None))
+        self._accounts_overdue = bool(self._company_data.get('accounts', {}).get('overdue', None))
+        self._etag = str(self._company_data.get('etag', ''))
+        self._external_registration_number = str(self._company_data.get('external_registration_number', ''))
+        self._company_type = str(self._company_data.get('type', ''))
+        if self._company_data.get('foreign_company_details'):
+            self._is_foreign_company = True
+        else:
+            self._is_foreign_company = False
+        
         # Address
-        self._address_line_1 = str(company_data.get('registered_office_address', {}).get('address_line_1', ''))
-        self._postal_code = str(company_data.get('registered_office_address', {}).get('postal_code', '')) 
-        self._locality = str(company_data.get('registered_office_address', {}).get('locality', ''))
-        self._country = str(company_data.get('registered_office_address', {}).get('country', ''))
+        self._address_line_1 = str(self._company_data.get('registered_office_address', {}).get('address_line_1', ''))
+        self._postal_code = str(self._company_data.get('registered_office_address', {}).get('postal_code', '')) 
+        self._locality = str(self._company_data.get('registered_office_address', {}).get('locality', ''))
+        self._country = str(self._company_data.get('registered_office_address', {}).get('country', ''))
         
         # Officers
-        self._officers = dict()
+        self._officers = []
         
         
     @property
@@ -142,7 +150,7 @@ class CompanyInfo():
         return "Access denied"
     
     @property
-    def officers(self) -> dict:
+    def officers(self) -> list:
         return self._officers
     
     @property
@@ -152,49 +160,68 @@ class CompanyInfo():
     @property
     def timestamp(self) -> str:
         return self._timestamp
+    
+    @property
+    def is_foreign_company(self) -> bool:
+        return self._is_foreign_company
         
         
     def exportCompanyInfo(self) -> None:
         """
-        Get company profile info from CH and export it to CSV files:
-        {company_number}_sic_codes.csv
-        {company_number}_prev_companies.csv
-        {company_number}_company_profile.csv
-        {company_number}_officers.csv
+        Get company profile info from Companies House and export it to CSV files:
+        
+        {prefix}_sic_codes_{timestamp}.csv,
+        {prefix}_prev_companies_{timestamp}.csv,
+        {prefix}_company_profile_{timestamp}.csv,
+        {prefix}_officers_{timestamp}.csv
+        
         The primary key is the company number.
         """
-        company_data = ChAPI.getChData(self._company_url, self.__api_key)
+        # Get company profile information
+        self.getCompanyInfo()
         
         # Get sic codes
-        sic_codes = company_data.get('sic_codes')
+        sic_codes = self._company_data.get('sic_codes')
         
         if not sic_codes is None:
             self.getSICCodes(sic_codes)
                 
         # Get previous company names
-        prev_companies = company_data.get('previous_company_names')
+        prev_companies = self._company_data.get('previous_company_names')
         
         if not prev_companies is None:
             self.getPreviousCompanyNames(prev_companies)
 
-        df = pd.json_normalize(company_data)
+        # Get company officers and their appointments
+        self.getCompanyOfficers()
         
-        # Exclude sic codes and previous company names
-        mod_df = df.loc[:, ~df.columns.isin(['sic_codes', 'previous_company_names'])]
+        # Get persons with significant control
+        self.getPersonsSignificantControl()
         
-        data_file = self.getDataFolderLocation(self._company_number + '_company_profile.csv')
-
-        mod_df.to_csv(data_file, index=False)
+        
+    def getCompanyInfo(self):
+        """
+        Get company profile information
+        """
+        company_fp = self.getDataFolderLocation(self._prefix + '_company_profile_' + self._timestamp + '.csv')
+        with open(company_fp,"a",newline='') as company_file:
+            company_writer = csv.writer(company_file)
+            company_writer.writerow[self._company_number, self._company_name, self._company_status, self._company_type,
+                                    self._jurisdiction, self._is_foreign_company, self._date_of_creation, self._etag,
+                                    self._external_registration_number, self._address_line_1, self._locality, self._postal_code,
+                                    self._country, self._accounts_overdue, self._has_been_liquidated, self._has_charges,
+                                    self._has_insolvency_history, self._registered_office_is_in_dispute, 
+                                    self._undeliverable_registered_office_address]
         
         
     def getSICCodes(self, sic_codes: list) -> None:
         """
         Get SIC codes
         """
-        sic_file = self.getDataFolderLocation(f"{self._company_number}_sic_codes.csv")
+        sic_fp = self.getDataFolderLocation(f"{self._company_number}_sic_codes.csv")
         
-        with open(sic_file,"w",newline='') as sf:
-            sf_writer = csv.writer(sf)
+        with open(sic_fp,"w",newline='') as sic_file:
+            sf_writer = csv.writer(sic_file)
             sf_writer.writerow(["company_number", "sic_codes"])
             for sic in sic_codes:
                 sf_writer.writerow([self._company_number, sic])
@@ -204,10 +231,10 @@ class CompanyInfo():
         """
         Get previous company names
         """
-        prev_file = self.getDataFolderLocation(f"{self._company_number}_prev_company_names.csv")
+        prev_fp = self.getDataFolderLocation(f"{self._company_number}_prev_company_names.csv")
         
-        with open(prev_file,"w",newline='') as pf:
-            pf_writer = csv.writer(pf)
+        with open(prev_fp,"w",newline='') as prev_file:
+            pf_writer = csv.writer(prev_file)
             pf_writer.writerow(["company_number","ceased_on","effective_from","name"])
             for prev in prev_companies:
                 pf_writer.writerow([self._company_number,prev.get('ceased_on'),prev.get('effective_from'),prev.get('name')])
@@ -239,6 +266,7 @@ class CompanyInfo():
             
             for officer in officers:
                 officer_name = officer.get('name')
+                self._officers.append(officer_name)
                 if officer_name is not None:
                     officer_name = str(officer_name)
                     officer_names = officer_name.split(',')
@@ -450,10 +478,7 @@ if __name__ == '__main__':
     'MAN UTD ltd': '02570509'
     'Swaravow Ltd' = '15192197'
     """
-    company_info = CompanyInfo('OE025157')
-    # Get company information
-    company_info.exportCompanyInfo()
-    # Get company officers and their appointments
-    company_info.getCompanyOfficers()
-    # Get persons with significant control
-    company_info.getPersonsSignificantControl()
+    # current date and time
+    now = datetime.now()
+    timestamp = str(datetime.timestamp(now))
+    company_info = CompanyInfo('OE025157',timestamp)
