@@ -1,10 +1,8 @@
 import pandas as pd
-import os
 import csv
 from urllib.parse import urljoin
 from companies_house_api import ChAPI
 from datetime import datetime
-import json
 
 class CompanyInfo():
     """
@@ -58,7 +56,7 @@ class CompanyInfo():
         self._country = str(self._company_data.get('registered_office_address', {}).get('country', ''))
         
         # Officers
-        self._officers = []
+        self._officers = dict()
         
         
     @property
@@ -150,7 +148,7 @@ class CompanyInfo():
         return "Access denied"
     
     @property
-    def officers(self) -> list:
+    def officers(self) -> dict:
         return self._officers
     
     @property
@@ -203,7 +201,7 @@ class CompanyInfo():
         """
         Get company profile information
         """
-        company_fp = self.getDataFolderLocation(self._prefix + '_company_profile_' + self._timestamp + '.csv')
+        company_fp = ChAPI.getDataFolderLocation(self._prefix + '_company_profile_' + self._timestamp + '.csv')
         with open(company_fp,"a",newline='') as company_file:
             company_writer = csv.writer(company_file)
             company_writer.writerow[self._company_number, self._company_name, self._company_status, self._company_type,
@@ -218,11 +216,10 @@ class CompanyInfo():
         """
         Get SIC codes
         """
-        sic_fp = self.getDataFolderLocation(f"{self._company_number}_sic_codes.csv")
+        sic_fp = ChAPI.getDataFolderLocation(self._prefix + "_sic_codes_" + self._timestamp + ".csv")
         
-        with open(sic_fp,"w",newline='') as sic_file:
+        with open(sic_fp,"a",newline='') as sic_file:
             sf_writer = csv.writer(sic_file)
-            sf_writer.writerow(["company_number", "sic_codes"])
             for sic in sic_codes:
                 sf_writer.writerow([self._company_number, sic])
 
@@ -231,11 +228,10 @@ class CompanyInfo():
         """
         Get previous company names
         """
-        prev_fp = self.getDataFolderLocation(f"{self._company_number}_prev_company_names.csv")
+        prev_fp = ChAPI.getDataFolderLocation(self._prefix + "_previous_company_names_" + self._timestamp + ".csv")
         
-        with open(prev_fp,"w",newline='') as prev_file:
+        with open(prev_fp,"a",newline='') as prev_file:
             pf_writer = csv.writer(prev_file)
-            pf_writer.writerow(["company_number","ceased_on","effective_from","name"])
             for prev in prev_companies:
                 pf_writer.writerow([self._company_number,prev.get('ceased_on'),prev.get('effective_from'),prev.get('name')])
                 
@@ -251,22 +247,11 @@ class CompanyInfo():
         # Update the _officers attribute with the new data
         self._officers = dict()
 
-        with open(self.getDataFolderLocation(f"{self._company_number}_officers.csv"), "w", newline='') as csv_file:
+        with open(ChAPI.getDataFolderLocation(self._prefix + "_company_officers_" + self._timestamp + ".csv"), "a", newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["company_number", "officer_surname", "officer_forename", "officer_other_forenames", 
-                                 "officer_role", "nationality", "appointed_on", "dob_month", "dob_year", "premises",
-                                 "address_line_1", "postal_code", "locality", "country", "country_of_residence", 
-                                 "occupation", "appointments", "officer_id", "appointment_kind", "is_corporate_officer", 
-                                 "total_company_appointments",])
-            # Header for officers' appointments csv file
-            appointments_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='')
-            appointments_csv_writer = csv.writer(appointments_csv_file)
-            appointments_csv_writer.writerow(["officer_id", "company_number", "company_name", "company_status", "officer_role", "appointed_on"])
-            appointments_csv_file.close()
             
             for officer in officers:
                 officer_name = officer.get('name')
-                self._officers.append(officer_name)
                 if officer_name is not None:
                     officer_name = str(officer_name)
                     officer_names = officer_name.split(',')
@@ -306,8 +291,8 @@ class CompanyInfo():
                     appointments_data = ChAPI.getChData(appointments_url, self.__api_key)
                     appointments_fields = self.getOfficerAppointments(appointments_data, officer_id,)
                     self._officers[officer_name]['appointment_kind'] = str(appointments_fields.get('kind', ''))
-                    self.officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
-                    self.officers[officer_name]['total_company_appointments'] = int(appointments_fields.get('total_results', 0))
+                    self._officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
+                    self._officers[officer_name]['total_company_appointments'] = int(appointments_fields.get('total_results', 0))
                     
                     # Write data to CSV
                     csv_writer.writerow([
@@ -343,24 +328,25 @@ class CompanyInfo():
         Returns:
             dict: total appointments, is corporate officer, and kind of appointment
         """
-        appointments_csv_file = open(self.getDataFolderLocation(f"{self._company_number}_officer_appointments.csv"), "a", newline='')
-        appointments_csv_writer = csv.writer(appointments_csv_file)
-        items = appointments_data.get('items', [])
-        for item in items:
-            appointments_csv_writer.writerow([
-                officer_id,
-                item.get('appointed_to', {}).get('company_number', ''),
-                item.get('appointed_to', {}).get('company_name', ''),
-                item.get('appointed_to', {}).get('company_status', ''),
-                item.get('officer_role', ''),
-                item.get('appointed_on', ''),
-            ])
-        appointments_csv_file.close()
-        return dict({
-            'kind': appointments_data.get('kind', ''), 
-            'is_corporate_officer': appointments_data.get('is_corporate_officer', None), 
-            'total_results': appointments_data.get('total_results', None)
-            })
+        with open(
+            ChAPI.getDataFolderLocation(self.prefix + "_officer_appointments_" + self._timestamp + ".csv"),
+            "a", newline='') as appointments_csv_file:
+            appointments_csv_writer = csv.writer(appointments_csv_file)
+            items = appointments_data.get('items', [])
+            for item in items:
+                appointments_csv_writer.writerow([
+                    officer_id,
+                    item.get('appointed_to', {}).get('company_number', ''),
+                    item.get('appointed_to', {}).get('company_name', ''),
+                    item.get('appointed_to', {}).get('company_status', ''),
+                    item.get('officer_role', ''),
+                    item.get('appointed_on', ''),
+                ])
+            return dict({
+                'kind': appointments_data.get('kind', ''), 
+                'is_corporate_officer': appointments_data.get('is_corporate_officer', None), 
+                'total_results': appointments_data.get('total_results', None)
+                })
         
     
     def getPersonsSignificantControl(self):
@@ -371,41 +357,13 @@ class CompanyInfo():
             # There is no persons with significant control url link
             return
         persons = ChAPI.getChData(self._persons_significant_control_url, self.__api_key)
-        with open(self.getDataFolderLocation(f"{self._company_number}_significant_persons.csv"), "w", newline='') as significant_persons_csv_file:
+        with open(ChAPI.getDataFolderLocation(self._prefix + "_persons_significant_control_" + self._timestamp + ".csv"),
+                  "a", newline='') as significant_persons_csv_file:
             significant_persons_csv_writer = csv.writer(significant_persons_csv_file)
-            significant_persons_csv_writer.writerow([
-                "company_number",
-                "name",
-                "title",
-                "surname",
-                "forename",
-                "other_forenames",
-                "dob_month",
-                "dob_year",
-                "kind",
-                "notified_on",
-                "nationality",
-                "country_of_residence",
-                "address_premises",
-                "address_line_1",
-                "address_line_2",
-                "address_locality",
-                "address_postal_code",
-                "address_country",
-                "etag",
-                "registration_number",
-                "legal_form",
-                "legal_authority",
-                "country_registered",
-                "place_registered",
-                ])
             # A separate file/table is needed to list each person's natures of control
-            with open(self.getDataFolderLocation(f"{self._company_number}_natures_of_control.csv"), "a", newline='') as natures_of_control_csv_file:
+            with open(ChAPI.getDataFolderLocation(self._prefix + "_natures_of_control_" + self._timestamp + ".csv"),
+                      "a", newline='') as natures_of_control_csv_file:
                 natures_of_control_csv_writer = csv.writer(natures_of_control_csv_file)
-                natures_of_control_csv_writer.writerow([
-                    "etag",
-                    "nature_of_control"
-                ])
                 
                 items = persons.get('items', [])
                 for item in items:
@@ -446,21 +404,6 @@ class CompanyInfo():
                                 etag,
                                 nature_of_control,
                             ])
-        
-    
-    def getDataFolderLocation(self, file_name: str, folder_name: str = "data") -> str:
-        """
-        Get the location of the data folder or create it if it doesn't exist.
-        """
-        parent_dir = os.path.abspath(os.path.join(os.pardir, os.getcwd()))
-        data_folder = os.path.join(parent_dir, folder_name)
-        
-        # Create the 'data' folder if it doesn't exist
-        if not os.path.exists(data_folder):
-            os.makedirs(data_folder)
-
-        full_fp = os.path.join(data_folder, file_name)
-        return full_fp
 
     
     def setAuthenticationFilePath(self, auth_fp: any) -> None:

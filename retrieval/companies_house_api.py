@@ -51,6 +51,22 @@ class ChAPI():
         parent_dir = os.path.abspath(os.path.join(os.pardir,os.getcwd()))
         full_fp = os.path.join(parent_dir, file_name)
         return full_fp
+    
+    
+    @staticmethod
+    def getDataFolderLocation(file_name: str, folder_name: str = "data") -> str:
+        """
+        Get the location of the data folder or create it if it doesn't exist.
+        """
+        parent_dir = os.path.abspath(os.path.join(os.pardir, os.getcwd()))
+        data_folder = os.path.join(parent_dir, folder_name)
+        
+        # Create the 'data' folder if it doesn't exist
+        if not os.path.exists(data_folder):
+            os.makedirs(data_folder)
+
+        full_fp = os.path.join(data_folder, file_name)
+        return full_fp
 
 
 if __name__ == '__main__':
