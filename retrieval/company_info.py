@@ -35,7 +35,7 @@ class CompanyInfo():
         self._company_name = str(self._company_data.get('company_name', ''))
         self._jurisdiction = str(self._company_data.get('jurisdiction', ''))
         self._date_of_creation = str(self._company_data.get('date_of_creation', ''))
-        self._has_insolvency_history = bool(self._company_data.get('date_of_creation', None))
+        self._has_insolvency_history = bool(self._company_data.get('has_insolvency_history', None))
         self._has_charges = bool(self._company_data.get('has_charges', None))
         self._has_been_liquidated = bool(self._company_data.get('has_been_liquidated', None))
         self._undeliverable_registered_office_address = bool(self._company_data.get('undeliverable_registered_office_address', None))

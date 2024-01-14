@@ -36,7 +36,16 @@ class CompanySearch():
             self.__api_key = ChAPI.getApiKey(authentication_fp)
         
     
-    def searchAll(self, query: str, items_per_page: int = 25, start_index: int = 0) -> None:
+    def searchAll(self, query: str, items_per_page: int = 100, start_index: int = 0) -> None:
+        """
+        This methods returns results for a search of Companies House data using the search 
+        all function. The results are returned in csv files.
+        
+        Args:
+            query (str): This is the search term that the user inputs, e.g., Arsenal
+            items_per_page (int, optional): This is the number of results returned. Defaults to 100.
+            start_index (int, optional): Defaults to 0.
+        """
         if len(query) == 0:
             print("Please enter a search query.")
             return
