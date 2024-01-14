@@ -25,7 +25,7 @@ class CompanyInfo():
         
         self._company_data = ChAPI.getChData(self._company_url, self.__api_key)
         # Links
-        links = self._company_data.get('links')
+        links = self._company_data.get('links', dict())
         self._officers_url = urljoin(self._base_url, links.get('officers', ''))
         self._filing_history_url = urljoin(self._base_url, links.get('filing_history', '')) 
         self._charges_url = urljoin(self._base_url, links.get('charges', '')) 
@@ -300,7 +300,7 @@ class CompanyInfo():
                     appointments_fields = self.getOfficerAppointments(appointments_data, officer_id,)
                     self._officers[officer_name]['appointment_kind'] = str(appointments_fields.get('kind', ''))
                     self._officers[officer_name]['is_corporate_officer'] = bool(appointments_fields.get('is_corporate_officer', None))
-                    self._officers[officer_name]['total_company_appointments'] = int(appointments_fields.get('total_results', 0))
+                    self._officers[officer_name]['total_company_appointments'] = appointments_fields.get('total_results', 0)
                     
                     # Write data to CSV
                     csv_writer.writerow([
