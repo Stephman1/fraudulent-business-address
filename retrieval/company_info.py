@@ -3,6 +3,7 @@ import csv
 from urllib.parse import urljoin
 from companies_house_api import ChAPI
 from datetime import datetime
+import json
 
 class CompanyInfo():
     """
@@ -413,6 +414,22 @@ class CompanyInfo():
                                 etag,
                                 nature_of_control,
                             ])
+                            
+    
+    def getFilingHistory(self):
+        """
+        Get a list of the company's filing history.
+        """
+        filing_history = ChAPI.getChData(url=self._filing_history_url, api_key=self.__api_key)
+        print(json.dumps(filing_history, indent=2))
+        
+        
+    def getCharges(self):
+        """
+        Get a list of the company's charges.
+        """
+        charges = ChAPI.getChData(url=self._charges_url, api_key=self.__api_key)
+        print(json.dumps(charges, indent=2))
 
     
     def setAuthenticationFilePath(self, auth_fp: any) -> None:
