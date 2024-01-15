@@ -29,6 +29,11 @@ class CompanySearch():
                                              "address_country","etag","registration_number","legal_form","legal_authority",
                                              "country_registered","place_registered"]
         self._natures_of_control_headers = ["etag","nature_of_control"]
+        self._company_charges_headers = ["company_number", "charge_code", "classification_description", "charge_number", "status", "delivered_on", 
+                                         "created_on", "particulars_description", "contains_fixed_charge", "contains_floating_charge",
+                                         "floating_charge_covers_all", "contains_negative_pledge"]
+        self._charges_persons_entitled_headers = ["charge_code", "persons_entitled"]
+        self._charges_transactions_headers = ["charge_code", "filing_type", "delivered_on", "links"]
         
         if authentication_fp is None:
             self.__api_key = ChAPI.getApiKey()
@@ -36,7 +41,7 @@ class CompanySearch():
             self.__api_key = ChAPI.getApiKey(authentication_fp)
         
     
-    def searchAll(self, query: str, items_per_page: int = 100, start_index: int = 0) -> None:
+    def searchAll(self, query: str, items_per_page: int = 25, start_index: int = 0) -> None:
         """
         This methods returns results for a search of Companies House data using the search 
         all function. The results are returned in csv files.
@@ -70,6 +75,13 @@ class CompanySearch():
     
     
     def insertHeaders(self, prefix: str, timestamp: str):
+        """
+        Create csv files and insert headers.
+
+        Args:
+            prefix (str): the prefix for the csv files, usually the search term
+            timestamp (str): the timestamp for when the search was made
+        """
         # Company information
         company_fp = ChAPI.getDataFolderLocation(prefix + '_companies_' + timestamp + '.csv')
         with open(company_fp,"w",newline='') as company_file:
@@ -105,7 +117,21 @@ class CompanySearch():
         with open(natures_fp,"w",newline='') as natures_file:
             natures_writer = csv.writer(natures_file)
             natures_writer.writerow(self._natures_of_control_headers)
-
+        # Company charges
+        charges_fp = ChAPI.getDataFolderLocation(prefix + '_company_charges_' + timestamp + '.csv')
+        with open(charges_fp,"w", newline='') as charges_file:
+            charges_writer = csv.writer(charges_file)
+            charges_writer.writerow(self._company_charges_headers)
+        # Charges persons entitled
+        entitled_fp = ChAPI.getDataFolderLocation(prefix + '_charges_persons_entitled_' + timestamp + '.csv')
+        with open(entitled_fp,"w", newline='') as entitled_file:
+            entitled_writer = csv.writer(entitled_file)
+            entitled_writer.writerow(self._charges_persons_entitled_headers) 
+        # Charges transactions
+        transactions_fp = ChAPI.getDataFolderLocation(prefix + '_charges_transactions_' + timestamp + '.csv')
+        with open(transactions_fp,"w", newline='') as transactions_file:
+            transactions_writer = csv.writer(transactions_file)
+            transactions_writer.writerow(self._charges_transactions_headers)
 
 if __name__ == '__main__':
     CompanySearch().searchAll("Swara")

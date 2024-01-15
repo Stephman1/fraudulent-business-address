@@ -200,6 +200,9 @@ class CompanyInfo():
         # Get persons with significant control
         self.getPersonsSignificantControl()
         
+        # Get company charges
+        self.getCharges()
+        
         
     def getCompanyInfo(self):
         """
@@ -429,7 +432,46 @@ class CompanyInfo():
         Get a list of the company's charges.
         """
         charges = ChAPI.getChData(url=self._charges_url, api_key=self.__api_key)
-        print(json.dumps(charges, indent=2))
+        charges_items = charges.get('items', [])
+        with open(ChAPI.getDataFolderLocation(self._prefix + '_company_charges_' + self._timestamp + '.csv'),
+                  "a", newline='') as charges_file:
+            charges_writer = csv.writer(charges_file)
+            with open(ChAPI.getDataFolderLocation(self._prefix + '_charges_persons_entitled_' + self._timestamp + '.csv'),
+                  "a", newline='') as entitled_file:
+                entitled_writer = csv.writer(entitled_file)
+                with open(ChAPI.getDataFolderLocation(self._prefix + '_charges_transactions_' + self._timestamp + '.csv'),
+                  "a", newline='') as transactions_file:
+                    transactions_writer = csv.writer(transactions_file) 
+                    for charge in charges_items:
+                        particulars = charge.get('particulars', {})
+                        charge_number = charge.get('charge_number', '')
+                        charge_code = str(int(self._company_number + '0000') + int(charge_number))
+                        charges_writer.writerow([
+                            self._company_number,
+                            charge_code,
+                            charge.get('classification', {}).get('description', ''),
+                            charge_number,
+                            charge.get('status', ''),
+                            charge.get('delivered_on', ''),
+                            charge.get('created_on', ''),
+                            particulars.get('description', ''),
+                            particulars.get('contains_fixed_charge', ''),
+                            particulars.get('contains_floating_charge', ''),
+                            particulars.get('floating_charge_covers_all', ''),
+                            particulars.get('contains_negative_pledge')
+                        ])
+                        for persons_entitled in charge.get('persons_entitled', []):
+                            entitled_writer.writerow([
+                                charge_code,
+                                persons_entitled.get('name', '')
+                            ])
+                        for transaction in charge.get('transactions', []):
+                            transactions_writer.writerow([
+                                charge_code,
+                                transaction.get('filing_type', ''),
+                                transaction.get('delivered_on', ''),
+                                transaction.get('links', {}).get('filing', '')
+                            ])
 
     
     def setAuthenticationFilePath(self, auth_fp: any) -> None:
@@ -450,4 +492,4 @@ if __name__ == '__main__':
     # current date and time
     now = datetime.now()
     timestamp = str(datetime.timestamp(now))
-    company_info = CompanyInfo('OE025157',timestamp)
+    company_info = CompanyInfo('07496944',timestamp, prefix='test')
