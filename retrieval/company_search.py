@@ -162,4 +162,4 @@ class CompanySearch():
             transactions_writer.writerow(self._charges_transactions_headers)
 
 if __name__ == '__main__':
-    CompanySearch().searchAddress("SW20 8ND")
+    CompanySearch().searchAddress("Drury Lane")
