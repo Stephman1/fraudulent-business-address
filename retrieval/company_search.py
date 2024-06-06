@@ -42,9 +42,9 @@ class CompanySearch():
         
     
     def searchAll(self, query: str, items_per_page: int = 25, start_index: int = 0) -> None:
-        """
-        This methods returns results for a search of Companies House data using the search 
-        all function. The results are returned in csv files.
+        """_summary_
+        Returns results for a search of Companies House data using the search all function. 
+        The results are returned in csv files.
         
         Args:
             query (str): This is the search term that the user inputs, e.g., Arsenal
@@ -58,6 +58,34 @@ class CompanySearch():
         url = r'https://api.company-information.service.gov.uk/search'
         
         params = {"q":query, "items_per_page":items_per_page, "start_index":start_index}
+        search = ChAPI.getChData(url=url, api_key=self.__api_key, params=params)
+        
+        # current date and time
+        now = datetime.now()
+        timestamp = str(datetime.timestamp(now))
+        
+        padded_query = query + "____"
+        prefix = padded_query[:5]
+        self.insertHeaders(prefix, timestamp)
+        
+        for item in search.get('items', []):
+            company_no = item.get('company_number') 
+            if company_no:
+                CompanyInfo(str(company_no), timestamp, prefix=prefix).exportCompanyInfo()
+
+
+    def searchAddress(self, query: str, size: str='25'):
+        """_summary_
+        Returns results for a search of Companies House data using the search by address function. 
+        The results are returned in csv files.
+        """
+        if len(query) == 0:
+            print("Please enter a search query.")
+            return
+        
+        url = r'https://api.company-information.service.gov.uk/advanced-search/companies'
+
+        params = {"location":query, "size":size}
         search = ChAPI.getChData(url=url, api_key=self.__api_key, params=params)
         
         # current date and time
@@ -134,4 +162,4 @@ class CompanySearch():
             transactions_writer.writerow(self._charges_transactions_headers)
 
 if __name__ == '__main__':
-    CompanySearch().searchAll("Swara")
+    CompanySearch().searchAddress("Drury Lane")
