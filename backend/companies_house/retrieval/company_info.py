@@ -26,11 +26,11 @@ class CompanyInfo():
         
         self._company_data = ChAPI.getChData(self._company_url, self.__api_key)
         # Links
-        self.links = self._company_data.get('links', dict())
-        self._officers_url = urljoin(self._base_url, self.links.get('officers', ''))
-        self._filing_history_url = urljoin(self._base_url, self.links.get('filing_history', '')) 
-        self._charges_url = urljoin(self._base_url, self.links.get('charges', '')) 
-        self._persons_significant_control_url = urljoin(self._base_url, self.links.get('persons_with_significant_control', ''))
+        self._links = self._company_data.get('links', dict())
+        self._officers_url = urljoin(self._base_url, self._links.get('officers', ''))
+        self._filing_history_url = urljoin(self._base_url, self._links.get('filing_history', '')) 
+        self._charges_url = urljoin(self._base_url, self._links.get('charges', '')) 
+        self._persons_significant_control_url = urljoin(self._base_url, self._links.get('persons_with_significant_control', ''))
         # Company info
         self._company_status = str(self._company_data.get('company_status', ''))
         self._company_name = str(self._company_data.get('company_name', ''))
