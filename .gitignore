@@ -2,12 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*/__init__.py
 
 # C extensions
 *.so
 
 # Authentication
 */authentication.txt
+
+# frontend
+!src/lib/
 
 # Data
 /*.csv
