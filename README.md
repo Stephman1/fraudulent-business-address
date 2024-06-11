@@ -80,7 +80,7 @@ We will use pep8 style guide for our naming convention
 
 Go to retrieval/company_search.py and run the file. You can use either the searchAll or searchAddress functions. The results of the search will be automatically saved in csv files in a data folder that will be created for you. All data is linked by company number, officer number or charge codes. You can modify the search query by inputting any string into the function parameter.
 
-You will need to create a Companies House account (no cost involved), get a developer api key and save this api key in a file called authentication.txt in the top level of the folder structure. You will not be able to use this application unless you have your own api key.
+You will need to create a Companies House account (no cost involved), get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called authentication.txt in the top level of the folder structure. You will not be able to use this application unless you have your own api key.
 
 [Companies House API](https://developer-specs.company-information.service.gov.uk/)
 
