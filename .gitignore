@@ -11,7 +11,7 @@ __pycache__/
 */authentication.txt
 
 # frontend
-!src/lib/
+!frontend/src/lib/
 
 # Data
 /*.csv
