@@ -1,7 +1,7 @@
 # Companies House
 
 ## Description
-Users can search for their address from the UI and this application will call the Companies House Api and return a table of all companies that are registered under their addresss. The goal is to help citizens in the UK to fight against fraud.
+Users can search for their address from the UI and this application will call the Companies House Api and return a table of all companies that are registered under their address. The goal is to help citizens in the UK to fight against fraud.
 
 Relevant info can be found from BBC News - [The leafy street in Leigh-on-Sea that 80 sham firms call home](https://www.bbc.co.uk/news/uk-england-essex-66773673)
 
