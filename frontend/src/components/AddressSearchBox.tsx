@@ -54,7 +54,7 @@ const AddressSearchBox = () => {
   };
 
   const concatenateAddress = (address: any) => {
-    const updatedAddress = `${address.address_line_1 ? address.address_line_1 + ", " : ""}${address.address_line_2 ? address.address_line_2 + ", " : ""}${address.locality ? address.locality + ", " : ""}${address.postal_code ? address.postal_code + ", " : ""}${address.region ? address.region : ""}`
+    const updatedAddress = `${address.address_line_1 ? address.address_line_1 + ", " : ""}${address.address_line_2 ? address.address_line_2 + ", " : ""}${address.locality ? address.locality + ", " : ""}${address.region ? address.region + ", " : ""}${address.postal_code ? address.postal_code + ", " : ""}`
 
     if (updatedAddress.slice(-2) == ', ') {
       return updatedAddress.slice(0, -2)
