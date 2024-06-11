@@ -2,12 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
+__init__.py
 
 # C extensions
 *.so
 
 # Authentication
-/authentication.txt
+*/authentication.txt
+
+# frontend
+!frontend/src/lib/
 
 # Data
 /*.csv
@@ -15,6 +19,7 @@ __pycache__/
 /data/
 
 # Distribution / packaging
+node_modules/
 .Python
 build/
 develop-eggs/
@@ -167,3 +172,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
+.DS_Store

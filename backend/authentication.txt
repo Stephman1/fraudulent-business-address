@@ -1,0 +1,3 @@
+{
+  "api_key": "your-companies-house-api-key"
+}

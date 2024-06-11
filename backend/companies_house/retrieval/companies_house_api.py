@@ -24,8 +24,8 @@ class ChAPI():
         except requests.RequestException as e:
             print(f"Error during API request: {e}")
             return {}   
-        
-    
+      
+
     @staticmethod
     def getApiKey(authentication_fp: str = None) -> str:
         """
