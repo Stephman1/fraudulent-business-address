@@ -83,6 +83,17 @@ You will need to create a Companies House account (no cost involved) to get a [d
 }
 ```
 
+The SECRET_KEY from backend/backend/settings.py also needs to be generated. The full instructions are included in the settings.py file.
+
+```
+cd backend
+python manage.py shell
+from django.core.management.utils import get_random_secret_key
+print(get_random_secret_key())
+```
+
+Then place this generated secret key into the SECRET_KEY variable in the backend/backend/settings.py file.
+
 [Companies House API](https://developer-specs.company-information.service.gov.uk/)
 
 [Companies House website: follow links to create an account](https://find-and-update.company-information.service.gov.uk/)
