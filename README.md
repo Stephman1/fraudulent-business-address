@@ -1,10 +1,8 @@
 # Companies House
-Companies House data project by Stephen and Ashika.
 
 ## Description
-User can search for their address from the UI and this application will call the companies house Api and
-return a table of all companies that is registered under their addresss. The goal is to help citizens in
-the UK to fight against crimes. 
+Users can search for their address from the UI and this application will call the Companies House Api and return a table of all companies that are registered under their addresss. The goal is to help citizens in the UK to fight against fraud.
+
 Relevant info can be found from BBC News - [The leafy street in Leigh-on-Sea that 80 sham firms call home](https://www.bbc.co.uk/news/uk-england-essex-66773673)
 
 ## Table of Contents
@@ -71,19 +69,22 @@ python manage.py runserver
 ```
 The backend server is starting at [http://127.0.0.1:8000](http://127.0.0.1:8000/)
 
-
 ## Style Guide
 
 We will use pep8 style guide for our naming convention
 
 ## Instructions
 
-Go to retrieval/company_search.py and run the file. You can use either the searchAll or searchAddress functions. The results of the search will be automatically saved in csv files in a data folder that will be created for you. All data is linked by company number, officer number or charge codes. You can modify the search query by inputting any string into the function parameter.
+You will need to create a Companies House account (no cost involved) to get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called backend/authentication.txt. You will not be able to use this application unless you have your own api key. Please input the following into your backend/authentication.txt file:
 
-You will need to create a Companies House account (no cost involved), get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called authentication.txt in the top level of the folder structure. You will not be able to use this application unless you have your own api key.
+```
+{
+  "api_key": "your-companies-house-api-key"
+}
+```
 
 [Companies House API](https://developer-specs.company-information.service.gov.uk/)
 
 [Companies House website: follow links to create an account](https://find-and-update.company-information.service.gov.uk/)
 
-The above instructions are only meant to be temporary. The goal is to create a user interface using a Django framework, so that users have an easier experience interacting with the Companies House api. The end goal is to allow users to use this application without having to create a developer account. Users will be able to sign up for alerts by email that will notify them if any business has been registered at their address without their authorisation.
+The end goal is to allow users to use this application without having to create a developer account. Users will be able to sign up for alerts by email on a website. They will be notified if any business has been registered at their address without their authorisation.
