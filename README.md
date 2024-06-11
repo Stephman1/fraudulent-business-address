@@ -12,6 +12,7 @@ Relevant info can be found from BBC News - [The leafy street in Leigh-on-Sea tha
 - [Installation](#installation)
 - [Getting Started with the Frontend](#getting-started-with-the-frontend)
 - [Running the Development Server](#running-the-development-server)
+- [Running the Backend Server](#running-the-backend-server)
 - [Style Guide](#style-guide)
 - [Instructions](#instructions)
 
@@ -60,10 +61,15 @@ npm run dev
 - Using `yarn`:
 yarn dev
 
-
-This will start the Vite development server, and you can view your application in the browser at `http://localhost:5173`
-
 ```
+This will start the Vite development server, and you can view your application in the browser at [http://localhost:5173](http://localhost:5173)
+
+## Running the Backend Server
+```
+cd backend
+python manage.py runserver
+```
+The backend server is starting at [http://127.0.0.1:8000](http://127.0.0.1:8000/)
 
 
 ## Style Guide
