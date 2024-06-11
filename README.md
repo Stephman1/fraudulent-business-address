@@ -15,7 +15,8 @@ pip install -r requirements.txt
 # Saving relevant python packages in requirement
 pip freeze > requirements.txt
 
-# Do not upload virtual env folder, authentication.txt
+# Do not upload virtual env folder, authentication.txt. 
+# Do not expose your SECRET KEY from Django
 git status
 git pull 
 git add requirements.txt
