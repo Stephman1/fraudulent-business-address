@@ -64,6 +64,10 @@ const AddressSearchBox = () => {
   };
 
   function handleResponseData(responseData: any[]): CompanyDataItem[] {
+    if (responseData == undefined) {
+      return []
+    }
+
     const transformedData: CompanyDataItem[] = responseData.map((item: any) => {
       const address = item.registered_office_address;
       item.full_address = concatenateAddress(address);
@@ -106,7 +110,7 @@ const AddressSearchBox = () => {
       ) : data && data.length > 0 ? (
         <CompanyTable items={data} />
       ) : (
-          !isLoading && data && data.length === 0 && <p>No results found</p>
+          !isLoading && data && data.length === 0 && <p className="text-center mt-8 font-semibold text-orange-950">There are no companies registered under this address</p>
       )}
     </div>
   );
