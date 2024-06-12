@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import CompanyTable from "./CompanyTable";
 import { CompanyDataItem } from "./CompanyTable";
+import UserInfo from "./UserInfoForm";
 
 
 const AddressSearchBox = () => {
@@ -98,11 +99,12 @@ const AddressSearchBox = () => {
         />
         <Button
           type="submit"
-          className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500"
+          className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-pink-500 hover:to-yellow-500"
           onClick={handleSubmit}
         >
           Search
         </Button>
+        <UserInfo />
       </div>
         
       {isLoading ? (
@@ -110,7 +112,7 @@ const AddressSearchBox = () => {
       ) : data && data.length > 0 ? (
         <CompanyTable items={data} />
       ) : (
-          !isLoading && data && data.length === 0 && <p className="text-center mt-8 font-semibold text-orange-950">There are no companies registered under this address</p>
+          !isLoading && data && data.length === 0 && <p className="text-center mt-8 font-semibold text-orange-950">There are currently no companies registered at this address</p>
       )}
     </div>
   );
