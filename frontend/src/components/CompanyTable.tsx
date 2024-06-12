@@ -5,6 +5,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableFooter,
   TableRow,
 } from "./ui/table"
 import { Skeleton } from './ui/skeleton'
@@ -49,6 +50,12 @@ const CompanyTable = (data: CompanyTableProps) => {
       </TableRow>
     ))}
     </TableBody>
+    <TableFooter>
+        <TableRow>
+          <TableCell className="text-left" colSpan={5}>Total Number of Companies</TableCell>
+          <TableCell className="text-right">{data.items.length}</TableCell>
+        </TableRow>
+      </TableFooter>
   </Table>
   )
 }
