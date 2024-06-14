@@ -28,10 +28,16 @@ import { useState } from "react"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import axios, { AxiosError, AxiosPromise, AxiosResponse } from "axios"
+import { toast } from 'sonner'
+
+
 
 export const User = z.object({
   email: z.string().min(1, { message: 'Email is required' }).email({ message: 'Invalid email address' }),
   address: z.string().min(1, { message: 'Address is required' }),
+  city: z.string().min(1, { message: 'City is required' }),
+  postcode: z.string().min(1, { message: 'Postcode is required' }),
   count: z.preprocess((val) => val === '' ? undefined : Number(val), 
   z.number({ 
     required_error: "Count is required", 
@@ -46,6 +52,8 @@ const UserInfoForm = () => {
   const [userInfo, setUserInfo] = useState<z.infer<typeof User>>({
     email: '',
     address: '',
+    city: '',
+    postcode: '',
     count: 0
   })
 
@@ -53,14 +61,39 @@ const UserInfoForm = () => {
     resolver: zodResolver(User),
     defaultValues: {
       email: '',
-      address: ''
+      address: '',
+      city: '',
+      postcode: '',
     },
   })
   
-  function onSubmit(values: z.infer<typeof User>) {
-    console.log(values)
-    setUserInfo(values)
+  async function onSubmit(userData: z.infer<typeof User>) {
+    console.log('submitting', userData)
+    setUserInfo(userData)
     handleClose()
+    form.reset()
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/add-user-data/', userData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.status === 201) {
+        toast.success(`New user ${userData.email} has been created successfully!`, {duration: 8000})
+        console.log('User created successfully:', response.data);
+      } 
+      
+    } catch (error: any) {
+      if (error.response && error.response.status === 400) {
+        toast.error('User email already exists! Please use a different email.', { duration: 8000 });
+        console.log('Error:', error.response.data);
+      } else {
+          toast.error('An unexpected error occurred. Please try again later.', { duration: 8000 });
+          console.log('Unexpected Error:', error);
+      } 
+    }
   }
 
   
@@ -73,7 +106,7 @@ const UserInfoForm = () => {
     setOpen(false)
     form.reset()
   } 
-    
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -117,10 +150,46 @@ const UserInfoForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <div className="grid grid-cols-5 items-center gap-5">
-                    <FormLabel className="text-right">Address</FormLabel>
+                    <FormLabel className="text-right">address</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Great Russell St, London WC1B 3DG" 
+                        placeholder="Great Russell St" 
+                        className="col-span-4" 
+                        {...field} />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField 
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="grid grid-cols-5 items-center gap-5">
+                    <FormLabel className="text-right">city</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="London" 
+                        className="col-span-4" 
+                        {...field} />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField 
+              control={form.control}
+              name="postcode"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="grid grid-cols-5 items-center gap-2">
+                    <FormLabel className="text-right">postcode</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="WC1B 3DG" 
                         className="col-span-4" 
                         {...field} />
                     </FormControl>
