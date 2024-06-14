@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import "./App.css";
 import AddressSearchBox from "./components/AddressSearchBox";
 
@@ -9,6 +10,7 @@ function App() {
           Search your address here
         </h1>
         <AddressSearchBox />
+        <Toaster richColors position='bottom-center'/>
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ const AddressSearchBox = () => {
     try {
       const encodedQuery = encodeURIComponent(query);
       
-      const requestUrl = `http://127.0.0.1:8000/api/company-data/?query=${encodedQuery}`;
+      const requestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedQuery}`;
       const response = await axios.get(requestUrl, {
         headers: {
           Accept: "application/json",
@@ -91,7 +91,7 @@ const AddressSearchBox = () => {
       <div className="flex flex-row justify-center items-center gap-4 m-2 w-full">
         <Input
           type="text"
-          placeholder="Address"
+          placeholder="address or postcode"
           className="h-10 flex-grow input input-bordered border-rounded"
           value={query}
           onChange={handleChange}
