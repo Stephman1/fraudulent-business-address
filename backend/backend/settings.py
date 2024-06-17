@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -> python manage.py shell
 # -> from django.core.management.utils import get_random_secret_key
 # -> print(get_random_secret_key())
-SECRET_KEY = "your-generated-secret-key-here"
+SECRET_KEY = "(3_25#!c^byjizi7e%e%t#l*@7e(hb0yn@gfn7__vi%7@wbluk"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -90,9 +90,13 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'Lanyuyingyixue',
+        'HOST': '127.0.0.1',
+        'PORT': '5233',
     }
 }
 

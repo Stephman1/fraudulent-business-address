@@ -1,10 +1,9 @@
 
 from rest_framework import routers
 from django.urls import path, include
-from .views import AddressViewSet, UserDataViewSet, get_company_data, add_user_data
+from .views import  UserDataViewSet, get_company_data, add_user_data
 
 router = routers.DefaultRouter()
-router.register(r"address", AddressViewSet, basename="address")
 router.register(r"all-user-data", UserDataViewSet, basename="user-data")
 
 
