@@ -22,12 +22,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 export const Address = z.object({
   streetNo: z.string().toLowerCase().optional(),
-  streetName: z.string().min(1, { message: 'Street name is required' }).toLowerCase(),
-  postcodePart1: z.string().min(2, { message: 'First part of postcode is at least 2 characters' }).toUpperCase()
-    .max(4, { message: 'First part of postcode is at most 4 characters' })
-    .refine(value => /^[A-Za-z]/.test(value), { message: 'First part of postcode must start with a letter' }),
-  postcodePart2: z.string().length(3, { message: 'Second part of postcode must have 3 characters' }).toUpperCase()
-    .refine(value => /^[0-9]/.test(value), { message: 'Second part of postcode must start with a digit' }),
+  streetName: z.string().toLowerCase().optional(),
+  postcodePart1: z.string().toUpperCase().optional(),
+  postcodePart2: z.string().toUpperCase().optional(),
 })
 
 
@@ -46,61 +43,66 @@ const AddressSearchBox = () => {
   })
 
   const onSubmit = async (addressData: any) => {
-    console.log('addressData', addressData )
-    setIsLoading(true)
-
+    console.log('addressData', addressData);
+    
+    // Validation to check if at least one input is provided
+    if (!addressData.streetName && (!addressData.postcodePart1 || !addressData.postcodePart2)) {
+      alert("Please provide either a street name or a complete postcode.");
+      return;
+    }
+    
+    setIsLoading(true);
+  
     try {
-      const encodedStreetName = encodeURIComponent(addressData.streetName);
-      const streetNameRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedStreetName}`
-      const encodedPostcode = encodeURIComponent(addressData.postcodePart1 + ' ' +addressData.postcodePart2);
-
-      const streetNameResponse = await axios.get(streetNameRequestUrl, {
-        headers: {
-          Accept: "application/json",
-        },
-      })
-      const postcodeResponse = await axios
-        .get(`http://127.0.0.1:8000/api/search-address/?query=${encodedPostcode}`, {
-        headers: {
-          Accept: "application/json",
-        },
-      })
-      
-      const updated_streetName_data: CompanyDataItem[] = handleResponseData(streetNameResponse.data.items)
-      const updated_postcode_data: CompanyDataItem[] = handleResponseData(postcodeResponse.data.items)
-
-      // console.log('updated_postcode_data', updated_postcode_data)
-      // console.log('updated_streetName_data', updated_streetName_data)
-
-
-      // Create a set to track unique company numbers
-      const companyNumberSet = new Set<string>();
-
-      // Create an array to hold the merged data
-      const mergedData: CompanyDataItem[] = [];
-
-      // Add unique entries from updated_streetName_data
-      updated_streetName_data.forEach(item => {
-          if (!companyNumberSet.has(item.company_number)) {
-              companyNumberSet.add(item.company_number);
-              mergedData.push(item);
-          }
-      });
-
-      // Add unique entries from updated_postcode_data
-      updated_postcode_data.forEach(item => {
-          if (!companyNumberSet.has(item.company_number)) {
-              companyNumberSet.add(item.company_number);
-              mergedData.push(item);
-          }
-      });
-        
-      setUnionData(mergedData)
-      setIsLoading(false)
-
+      const encodedStreetName = encodeURIComponent(addressData.streetName || '');
+      const encodedPostcode = encodeURIComponent(addressData.postcodePart1 + ' ' + addressData.postcodePart2 || '');
+  
+      let streetNameData: CompanyDataItem[] = [];
+      let postcodeData: CompanyDataItem[] = [];
+  
+      if (addressData.streetName) {
+        const streetNameRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedStreetName}`;
+        const streetNameResponse = await axios.get(streetNameRequestUrl, {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        streetNameData = handleResponseData(streetNameResponse.data.items);
+      }
+  
+      if (addressData.postcodePart1 && addressData.postcodePart2) {
+        const postcodeRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedPostcode}`;
+        const postcodeResponse = await axios.get(postcodeRequestUrl, {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        postcodeData = handleResponseData(postcodeResponse.data.items);
+      }
+  
+      let finalData: CompanyDataItem[];
+  
+      if (streetNameData.length > 0 && postcodeData.length > 0) {
+        // Perform intersection
+        const companyNumberSet = new Set(streetNameData.map(item => item.company_number));
+        finalData = postcodeData.filter(item => companyNumberSet.has(item.company_number));
+      } else if (streetNameData.length > 0) {
+        // Only street name data available
+        finalData = streetNameData;
+      } else if (postcodeData.length > 0) {
+        // Only postcode data available
+        finalData = postcodeData;
+      } else {
+        // No data available
+        finalData = [];
+      }
+  
+      setUnionData(finalData);
+      setIsLoading(false);
+  
     } catch (error) {
-      console.log(error)
-      setIsLoading(false)
+      console.log(error);
+      setIsLoading(false);
     }
   };
 

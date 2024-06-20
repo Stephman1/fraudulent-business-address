@@ -14,7 +14,6 @@ class UserAttribute(models.Model):
     postcodePart1 = models.CharField(max_length=200, null=True)
     postcodePart2 = models.CharField(max_length=200, null=True)
     existingBusinesses = models.IntegerField(default=0)  
-    additionalAddress = models.CharField(max_length=200, null=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):

@@ -35,7 +35,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
- 
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { ChevronsUpDown } from "lucide-react"
@@ -45,7 +44,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import axios from "axios"
 import { toast } from 'sonner'
-
 
 export const User = z.object({
   email: z.string().min(1, { message: 'Email is required' }).email({ message: 'Invalid email address' }).toLowerCase(),
@@ -60,7 +58,7 @@ export const User = z.object({
   z.number({ 
     invalid_type_error: "Please enter a number" 
   }).nonnegative().finite()),
-  additionalAddress: z.string().toLowerCase(),
+  additionalAddress: z.boolean().default(false),
 })
 
 const UserInfoForm = () => {
@@ -77,7 +75,7 @@ const UserInfoForm = () => {
       postcodePart1: '',
       postcodePart2: '',
       existingBusinesses: 0,
-      additionalAddress: 'no'
+      additionalAddress: false
     },
   })
   
@@ -288,15 +286,15 @@ const UserInfoForm = () => {
                             </Tooltip>
                           </TooltipProvider>
                         </FormLabel>
-                        <Select onValueChange={field.onChange}>
+                        <Select onValueChange={(value) => field.onChange(value === 'true')}>
                           <FormControl className="col-span-2">
-                            <SelectTrigger >
+                            <SelectTrigger>
                               <SelectValue placeholder="No" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                            <SelectItem value="true">Yes</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
