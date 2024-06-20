@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,64 +7,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "./ui/form"
+} from "@/components/ui/tooltip";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
-import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { ChevronsUpDown } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { ChevronsUpDown } from "lucide-react";
 
-import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import axios from "axios"
-import { toast } from 'sonner'
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import axios from "axios";
+import { toast } from 'sonner';
 
 export const User = z.object({
   email: z.string().min(1, { message: 'Email is required' }).email({ message: 'Invalid email address' }).toLowerCase(),
   streetNo: z.string().toLowerCase().optional(),
   streetName: z.string().min(1, { message: 'Street name is required' }).toLowerCase(),
-  postcodePart1: z.string().min(2, { message: 'First part of postcode is at least 2 characters' }).toUpperCase()
-    .max(4, { message: 'First part of postcode is at most 4 characters' })
-    .refine(value => /^[A-Za-z]/.test(value), { message: 'First part of postcode must start with a letter' }),
-  postcodePart2: z.string().length(3, { message: 'Second part of postcode must have 3 characters' }).toUpperCase()
-    .refine(value => /^[0-9]/.test(value), { message: 'Second part of postcode must start with a digit' }),
+  postcode: z.string()
+    .min(5, { message: 'Postcode must be at least 5 characters' })
+    .max(8, { message: 'Postcode must be at most 8 characters' })
+    .refine(value => {
+      const postcodePattern = /^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})$/;
+      return postcodePattern.test(value);
+    }, { message: 'Invalid UK postcode format' }),
   existingBusinesses: z.preprocess((val) => val === '' ? undefined : Number(val), 
   z.number({ 
     invalid_type_error: "Please enter a number" 
   }).nonnegative().finite()),
   additionalAddress: z.boolean().default(false),
-})
+});
 
 const UserInfoForm = () => {
 
-  const [open, setOpen] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const form = useForm<z.infer<typeof User>>({
     resolver: zodResolver(User),
@@ -72,51 +74,64 @@ const UserInfoForm = () => {
       email: '',
       streetNo: '',
       streetName: '',
-      postcodePart1: '',
-      postcodePart2: '',
+      postcode: '',
       existingBusinesses: 0,
       additionalAddress: false
     },
-  })
-  
-  async function onSubmit(userData: any) {
+  });
 
-    console.log('submitting', userData)
-    handleClose()
-    form.reset()
+  // Function to add space to postcode if necessary
+  const formatPostcode = () => {
+    let { postcode } = form.getValues();
+    if (postcode && postcode.length >= 5 && postcode.length <= 8) {
+      postcode = postcode.trim();
+      const postcodePattern = /^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})$/;
+      if (postcodePattern.test(postcode) && !postcode.includes(' ')) {
+        const spaceIndex = postcode.length - 3;
+        postcode = postcode.slice(0, spaceIndex) + ' ' + postcode.slice(spaceIndex);
+        form.setValue('postcode', postcode);
+      }
+    }
+  };
+
+  async function onSubmit(userData: any) {
+    console.log('submitting', userData);
+    formatPostcode(); // Ensure postcode format before submission
+    handleClose();
+    form.reset();
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/add-user-data/', userData, {
         headers: {
           'Content-Type': 'application/json'
         }
-      })
+      });
 
       if (response.status === 201) {
-        toast.success(`New user ${userData.email} and address have been created successfully!`, {duration: 8000})
-        console.log('User created successfully:', response.data)
-      } 
-      
+        toast.success(`New user ${userData.email} and address have been created successfully!`, { duration: 8000 });
+        console.log('User created successfully:', response.data);
+      }
+
     } catch (error: any) {
       if (error.response && error.response.status === 400) {
         toast.error('User email and address already exist! Please use a different email or address.', { duration: 8000 });
-        console.log('Error:', error.response.data)
+        console.log('Error:', error.response.data);
       } else {
-          toast.error('An unexpected error occurred. Please try again later.', { duration: 8000 });
-          console.log('Unexpected Error:', error)
-      } 
+        toast.error('An unexpected error occurred. Please try again later.', { duration: 8000 });
+        console.log('Unexpected Error:', error);
+      }
     }
   }
-  
+
   const handleOpen = () => {
-    form.reset()
-    setOpen(true)
-  }
-    
+    form.reset();
+    setOpen(true);
+  };
+
   const handleClose = () => {
-    setOpen(false)
-    form.reset()
-  } 
+    setOpen(false);
+    form.reset();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -191,33 +206,26 @@ const UserInfoForm = () => {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-3 items-center gap-6">
-              <FormLabel className="text-right">Postcode</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="postcodePart1"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1">
-                      <FormControl>
-                        <Input placeholder="WC1B" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="postcodePart2"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1">
-                      <FormControl>
-                        <Input placeholder="3DG" {...field} />
-                      </FormControl>
-                      <FormMessage className="text-right"/>
-                    </FormItem>
-                  )}
-                />
-            </div>
+            <FormField 
+              control={form.control}
+              name="postcode"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="grid grid-cols-3 items-center gap-6">
+                    <FormLabel className="text-right">Postcode</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="WC1B 3DG" 
+                        className="col-span-2" 
+                        {...field} 
+                        onBlur={formatPostcode} // Ensure format on blur
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-right" />
+                </FormItem>
+              )}
+            />
             <Collapsible
               open={isCollapsed}
               onOpenChange={setIsCollapsed}
@@ -316,7 +324,7 @@ const UserInfoForm = () => {
         </Form>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default UserInfoForm
+export default UserInfoForm;
