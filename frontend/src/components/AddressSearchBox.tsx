@@ -23,13 +23,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 export const Address = z.object({
   streetNo: z.string().toLowerCase().optional(),
   streetName: z.string().toLowerCase().optional(),
-  postcodePart1: z.string().toUpperCase().optional(),
-  postcodePart2: z.string().toUpperCase().optional(),
+  postcode: z.string().toUpperCase().optional(),
 })
 
 
 const AddressSearchBox = () => {
-  const [unionData, setUnionData] = useState<CompanyDataItem[] | null>(null)
+  const [searchData, setSearchData] = useState<CompanyDataItem[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof Address>>({
@@ -37,76 +36,95 @@ const AddressSearchBox = () => {
     defaultValues: {
       streetNo: '',
       streetName: '',
-      postcodePart1: '',
-      postcodePart2: '',
+      postcode: '',
     },
   })
 
-  const onSubmit = async (addressData: any) => {
+const onSubmit = async (addressData: any) => {
     console.log('addressData', addressData);
-    
+
     // Validation to check if at least one input is provided
-    if (!addressData.streetName && (!addressData.postcodePart1 || !addressData.postcodePart2)) {
-      alert("Please provide either a street name or a complete postcode.");
-      return;
+    if (!addressData.streetName && !addressData.postcode) {
+        alert("Please provide either a street name or a postcode.");
+        return;
     }
+
+    let sanitizedPostcode = (addressData.postcode || '').trim();
+
+    // Validate postcode if provided
+    if (sanitizedPostcode) {
+        const postcodePattern = /^([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})$/;
     
+        if (!postcodePattern.test(sanitizedPostcode)) {
+            alert("Please provide a valid UK postcode.");
+            return;
+        }
+
+        // Ensure there is a space in the middle of the postcode if missing
+        if (!sanitizedPostcode.includes(' ')) {
+            const spaceIndex = sanitizedPostcode.length - 3;
+            sanitizedPostcode = sanitizedPostcode.slice(0, spaceIndex) + ' ' + sanitizedPostcode.slice(spaceIndex);
+        }
+    }
+
     setIsLoading(true);
-  
+
     try {
-      let streetNameQuery = addressData.streetName || '';
-      if (addressData.streetNo) {
-        streetNameQuery = `${addressData.streetNo} ${addressData.streetName}`;
-      }
-      const encodedStreetName = encodeURIComponent(streetNameQuery);
-      const encodedPostcode = encodeURIComponent(addressData.postcodePart1 + ' ' + addressData.postcodePart2 || '');
-  
-      let streetNameData: CompanyDataItem[] = [];
-      let postcodeData: CompanyDataItem[] = [];
-  
-      if (streetNameQuery) {
-        const streetNameRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedStreetName}`;
-        const streetNameResponse = await axios.get(streetNameRequestUrl, {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        streetNameData = handleResponseData(streetNameResponse.data.items);
-      }
-  
-      if (addressData.postcodePart1 && addressData.postcodePart2) {
-        const postcodeRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedPostcode}`;
-        const postcodeResponse = await axios.get(postcodeRequestUrl, {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        postcodeData = handleResponseData(postcodeResponse.data.items);
-      }
-  
-      let finalData: CompanyDataItem[];
-  
-      if (streetNameData.length > 0 && postcodeData.length > 0) {
-        // Perform intersection
-        const companyNumberSet = new Set(streetNameData.map(item => item.company_number));
-        finalData = postcodeData.filter(item => companyNumberSet.has(item.company_number));
-      } else if (streetNameData.length > 0) {
-        // Only street name data available
-        finalData = streetNameData;
-      } else if (postcodeData.length > 0) {
-        // Only postcode data available
-        finalData = postcodeData;
-      } else {
-        // No data available
-        finalData = [];
-      }
-  
-      setUnionData(finalData);
-      setIsLoading(false);
-  
+        let streetNameQuery = addressData.streetName || '';
+        if (addressData.streetNo) {
+            // Include street number if provided
+            streetNameQuery = `${addressData.streetNo} ${addressData.streetName}`;
+        }
+
+        const encodedStreetName = encodeURIComponent(streetNameQuery);
+        const encodedPostcode = encodeURIComponent(sanitizedPostcode);
+
+        let streetNameData: CompanyDataItem[] = [];
+        let postcodeData: CompanyDataItem[] = [];
+
+        if (streetNameQuery) {
+            const streetNameRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedStreetName}`;
+            const streetNameResponse = await axios.get(streetNameRequestUrl, {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+            streetNameData = handleResponseData(streetNameResponse.data.items);
+        }
+
+        if (sanitizedPostcode) {
+            const postcodeRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedPostcode}`;
+            const postcodeResponse = await axios.get(postcodeRequestUrl, {
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+            postcodeData = handleResponseData(postcodeResponse.data.items);
+        }
+
+        let finalData: CompanyDataItem[];
+
+        if (streetNameData.length > 0 && postcodeData.length > 0) {
+            // Perform intersection
+            const companyNumberSet = new Set(streetNameData.map(item => item.company_number));
+            finalData = postcodeData.filter(item => companyNumberSet.has(item.company_number));
+        } else if (streetNameData.length > 0) {
+            // Only street name data available
+            finalData = streetNameData;
+        } else if (postcodeData.length > 0) {
+            // Only postcode data available
+            finalData = postcodeData;
+        } else {
+            // No data available
+            finalData = [];
+        }
+
+        setSearchData(finalData);
+        setIsLoading(false);
+
     } catch (error) {
-      console.log(error);
-      setIsLoading(false);
+        console.log(error);
+        setIsLoading(false);
     }
   };
 
@@ -190,25 +208,13 @@ const AddressSearchBox = () => {
               <FormLabel className="text-right">Postcode</FormLabel>
                 <FormField
                   control={form.control}
-                  name="postcodePart1"
+                  name="postcode"
                   render={({ field }) => (
                     <FormItem className="col-span-1">
                       <FormControl>
-                        <Input placeholder="WC1B" {...field} />
+                        <Input placeholder="WC1B 3DG" {...field} />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="postcodePart2"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1">
-                      <FormControl>
-                        <Input placeholder="3DG" {...field} />
-                      </FormControl>
-                      <FormMessage className="text-right"/>
                     </FormItem>
                   )}
                 />
@@ -228,10 +234,10 @@ const AddressSearchBox = () => {
       
       {isLoading ? (
         <CompanyTable.Skeleton />
-      ) : unionData && unionData.length > 0 ? (
-        <CompanyTable items={unionData} />
+      ) : searchData && searchData.length > 0 ? (
+        <CompanyTable items={searchData} />
       ) : (
-          !isLoading && unionData && unionData.length === 0 && 
+          !isLoading && searchData && searchData.length === 0 && 
           <p className="text-center mt-8 font-semibold text-orange-950">
             There are currently no companies registered at this address
           </p>

@@ -11,9 +11,8 @@ class UserAttribute(models.Model):
     email = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='attributes')
     streetNo = models.CharField(max_length=200, null=True)
     streetName = models.CharField(max_length=200, null=True)
-    postcodePart1 = models.CharField(max_length=200, null=True)
-    postcodePart2 = models.CharField(max_length=200, null=True)
-    existingBusinesses = models.IntegerField(default=0)  
+    postcode = models.CharField(max_length=200, null=True)
+    existingBusinesses = models.IntegerField(default=0)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):

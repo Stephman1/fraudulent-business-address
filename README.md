@@ -34,8 +34,7 @@ git status
 git pull 
 git add requirements.txt
 git commit -m "comment"
-git push 
-
+git push
 ```
 
 ## Getting Started with the Frontend

@@ -40,8 +40,7 @@ def add_user_data(request):
         email = request.data.get('email')
         streetNo = request.data.get('streetNo')
         streetName = request.data.get('streetName')
-        postcodePart1 = request.data.get('postcodePart1')
-        postcodePart2 = request.data.get('postcodePart2')
+        postcode = request.data.get('postcode')
         existingBusinesses = request.data.get('existingBusinesses', 0)
         additionalAddress = request.data.get('additionalAddress', False)
         
@@ -56,8 +55,7 @@ def add_user_data(request):
                 email=user,
                 streetNo=streetNo,
                 streetName=streetName,
-                postcodePart1=postcodePart1,
-                postcodePart2=postcodePart2
+                postcode=postcode,
             )
             
             if existing_attributes.exists():
@@ -69,8 +67,7 @@ def add_user_data(request):
                     email=user,
                     streetNo=streetNo,
                     streetName=streetName,
-                    postcodePart1=postcodePart1,
-                    postcodePart2=postcodePart2,
+                    postcode=postcode,
                     existingBusinesses=existingBusinesses,
                 )
                 new_attribute.save()
@@ -81,8 +78,7 @@ def add_user_data(request):
                     email=user,
                     streetNo=streetNo,
                     streetName=streetName,
-                    postcodePart1=postcodePart1,
-                    postcodePart2=postcodePart2,
+                    postcode=postcode,
                     existingBusinesses=existingBusinesses,
                 )
                 new_attribute.save()
@@ -94,8 +90,7 @@ def add_user_data(request):
                 email=user,
                 streetNo=streetNo,
                 streetName=streetName,
-                postcodePart1=postcodePart1,
-                postcodePart2=postcodePart2,
+                postcode=postcode,
                 existingBusinesses=existingBusinesses,
             )
             new_attribute.save()
