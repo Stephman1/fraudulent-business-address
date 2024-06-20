@@ -54,13 +54,17 @@ const AddressSearchBox = () => {
     setIsLoading(true);
   
     try {
-      const encodedStreetName = encodeURIComponent(addressData.streetName || '');
+      let streetNameQuery = addressData.streetName || '';
+      if (addressData.streetNo) {
+        streetNameQuery = `${addressData.streetNo} ${addressData.streetName}`;
+      }
+      const encodedStreetName = encodeURIComponent(streetNameQuery);
       const encodedPostcode = encodeURIComponent(addressData.postcodePart1 + ' ' + addressData.postcodePart2 || '');
   
       let streetNameData: CompanyDataItem[] = [];
       let postcodeData: CompanyDataItem[] = [];
   
-      if (addressData.streetName) {
+      if (streetNameQuery) {
         const streetNameRequestUrl = `http://127.0.0.1:8000/api/search-address/?query=${encodedStreetName}`;
         const streetNameResponse = await axios.get(streetNameRequestUrl, {
           headers: {
