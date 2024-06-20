@@ -16,7 +16,7 @@ class UserDataViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def get_company_data(request):
     query = request.GET.get('query') 
-    size = request.GET.get('size', 25) 
+    size = request.GET.get('size', 1000)
     url = 'https://api.company-information.service.gov.uk/advanced-search/companies'
     api_key = ChAPI.getApiKey()
     params = {
