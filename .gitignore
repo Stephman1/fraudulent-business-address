@@ -13,6 +13,9 @@ __init__.py
 # frontend
 !frontend/src/lib/
 
+#backend
+migrations/
+
 # Data
 /*.csv
 /*.json

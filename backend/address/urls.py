@@ -1,15 +1,14 @@
 
 from rest_framework import routers
 from django.urls import path, include
-from .views import AddressViewSet, get_company_data
+from .views import  UserDataViewSet, get_company_data, add_user_data
 
 router = routers.DefaultRouter()
-router.register("address", AddressViewSet, basename="address")
+router.register(r"all-user-data", UserDataViewSet, basename="user-data")
 
 
 urlpatterns = [
-    path('company-data/', get_company_data, name='get_company_data'),
+    path('search-address/', get_company_data, name='get_company_data'),
+    path('add-user-data/', add_user_data, name='add_user_data'),
     path('', include(router.urls)),
 ]
-
-urlpatterns += router.urls

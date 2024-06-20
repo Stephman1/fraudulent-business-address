@@ -62,6 +62,14 @@ yarn dev
 ```
 This will start the Vite development server, and you can view your application in the browser at [http://localhost:5173](http://localhost:5173)
 
+## Running migrations for PostgreSQL database
+If running the version of this repo that connects to a local PostgreSQL database. Then you will first need to install PostgreSQL, create a database, input the database connection details into the backend/backend/settings.py file and then generate migrations for your app, i.e., create the necessary tables in the database.
+```
+cd backend
+python manage.py makemigrations address
+python manage.py migrate 
+```
+
 ## Running the Backend Server
 ```
 cd backend
