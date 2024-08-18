@@ -7,9 +7,6 @@ __init__.py
 # C extensions
 *.so
 
-# Authentication
-/backend/authentication.txt
-
 # frontend
 !frontend/src/lib/
 

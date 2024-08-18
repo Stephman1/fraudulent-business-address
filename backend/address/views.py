@@ -6,7 +6,7 @@ from rest_framework import viewsets, status
 from . import models, serializers
 from . import models
 from .models import  UserData, UserAttribute
-from companies_house.retrieval.companies_house_api import ChAPI
+from companies_house.companies_house_api import ChAPI
 
 class UserDataViewSet(viewsets.ModelViewSet):
   queryset = models.UserData.objects.all()
