@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -> python manage.py shell
 # -> from django.core.management.utils import get_random_secret_key
 # -> print(get_random_secret_key())
-SECRET_KEY = "your-generated-secret-key-here"
+SECRET_KEY = "^olh4py@&3^+5cm66m16^f5iku5w#2i8z=g69_yu#5x5a$7d14"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -92,9 +92,9 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
+        'NAME': 'companieshouse',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
