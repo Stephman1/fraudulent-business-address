@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 
 from django.shortcuts import render
-from django.http import HttpResponse
 
 from . import models, serializers
 from . import models
@@ -102,4 +101,4 @@ def add_user_data(request):
 
 @api_view(['GET'])
 def say_hello(request):
-    return render(request, 'hello.html')
+    return render(request, 'hello.html', {'name': 'Kevin'})
