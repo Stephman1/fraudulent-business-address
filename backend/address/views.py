@@ -1,7 +1,8 @@
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, status
+
+from django.shortcuts import render
 
 from . import models, serializers
 from . import models
@@ -96,3 +97,8 @@ def add_user_data(request):
             new_attribute.save()
 
         return Response({'message': f'New user {email} has been created successfully!'}, status=status.HTTP_201_CREATED)
+    
+
+@api_view(['GET'])
+def say_hello(request):
+    return render(request, 'hello.html', {'name': 'Kevin'})
