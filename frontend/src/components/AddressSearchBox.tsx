@@ -108,11 +108,11 @@ const onSubmit = async (addressData: any) => {
             // Perform intersection
             const companyNumberSet = new Set(streetNameData.map(item => item.company_number));
             finalData = postcodeData.filter(item => companyNumberSet.has(item.company_number));
-        } else if (streetNameData.length > 0) {
-            // Only street name data available
+        } else if (streetNameData.length > 0 && !sanitizedPostcode) {
+            // Street name data available
             finalData = streetNameData;
-        } else if (postcodeData.length > 0) {
-            // Only postcode data available
+        } else if (postcodeData.length > 0 && !streetNameQuery) {
+            // Postcode data available
             finalData = postcodeData;
         } else {
             // No data available
