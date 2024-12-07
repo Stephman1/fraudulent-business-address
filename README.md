@@ -84,7 +84,7 @@ We will use pep8 style guide for our naming convention
 
 ## Instructions
 
-You will need to create a Companies House account (no cost involved) to get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called backend/authentication.txt. You will not be able to use this application unless you have your own api key. Please input the following into your backend/authentication.txt file:
+You will need to create a Companies House account (no cost involved) to get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called backend/authentication.txt. You will not be able to use this application unless you have your own api key. Please input the following into your backend/config.json file:
 
 ```
 {
