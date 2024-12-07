@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-server
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: no  # Ensures the container does not restart automatically

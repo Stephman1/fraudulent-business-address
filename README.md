@@ -1,6 +1,7 @@
 # Companies House
 
 ## Description
+
 Users can search for their address from the UI and this application will call the Companies House Api and return a table of all companies that are registered under their address. The goal is to help citizens in the UK to fight against fraud.
 
 Relevant info can be found from BBC News - [The leafy street in Leigh-on-Sea that 80 sham firms call home](https://www.bbc.co.uk/news/uk-england-essex-66773673)
@@ -17,6 +18,7 @@ Relevant info can be found from BBC News - [The leafy street in Leigh-on-Sea tha
 - [Instructions](#instructions)
 
 ## Installation
+
 ```
 # Setting up a virtual Environment
 python -m venv ch_env
@@ -39,7 +41,15 @@ git commit -m "comment"
 git push
 ```
 
+## Prerequisites
+
+```
+Docker Engine
+Node.js (v22.5.1)
+```
+
 ## Getting Started with the Frontend
+
 ```
 cd frontend
 
@@ -53,6 +63,7 @@ yarn install
 ```
 
 ## Running the Development Server
+
 ```
 - Using `npm`:
 npm run dev
@@ -61,10 +72,13 @@ npm run dev
 yarn dev
 
 ```
+
 This will start the Vite development server, and you can view your application in the browser at [http://localhost:5173](http://localhost:5173)
 
 ## Running migrations for PostgreSQL database
-If running the version of this repo that connects to a local PostgreSQL database. Then you will first need to install PostgreSQL, create a database, input the database connection details into the backend/backend/settings.py file and then generate migrations for your app, i.e., create the necessary tables in the database.
+
+If running the version of this repo that connects to a local PostgreSQL database. Then you will first need to install PostgreSQL, create a database, input the database connection details into the .env file and then generate migrations for your app, i.e., create the necessary tables in the database.
+
 ```
 cd backend
 python manage.py makemigrations address
@@ -72,27 +86,37 @@ python manage.py migrate
 ```
 
 ## Running the Backend Server
+
+The backend server code is run in a Docker container. This container is built and run using a Docker compose yml file.
+
 ```
-cd backend
-python manage.py runserver
+# Build the image and start the Docker container:
+docker compose up --build -d  # possibly docker-compose
+
+# If you have already built the image and don't need to rebuild it then you can use:
+docker compose up -d
 ```
+
 The backend server is starting at [http://127.0.0.1:8000](http://127.0.0.1:8000/)
+
+```
+# To stop and clean up the containers, you can use:
+docker compose down
+```
 
 ## Style Guide
 
-We will use pep8 style guide for our naming convention
+We will use pep8 style guide for our naming convention.
 
 ## Instructions
 
-You will need to create a Companies House account (no cost involved) to get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in a file called backend/authentication.txt. You will not be able to use this application unless you have your own api key. Please input the following into your backend/config.json file:
+You will need to create a Companies House account (no cost involved) to get a [developer api key](https://developer.company-information.service.gov.uk/manage-applications) and save this api key in the .env file as an environment variable.
 
 ```
-{
-  "api_key": "your-companies-house-api-key"
-}
+CH_API_KEY="enter-companies-house-api-key"
 ```
 
-The SECRET_KEY from backend/backend/settings.py also needs to be generated. The full instructions are included in the settings.py file.
+The SECRET_KEY can be generated in backend/backend/settings.py and then entered into the .env file as an environment variable. The full instructions are included in the settings.py file.
 
 ```
 cd backend
@@ -100,8 +124,6 @@ python manage.py shell
 from django.core.management.utils import get_random_secret_key
 print(get_random_secret_key())
 ```
-
-Then place this generated secret key into the SECRET_KEY variable in the backend/backend/settings.py file.
 
 [Companies House API](https://developer-specs.company-information.service.gov.uk/)
 
