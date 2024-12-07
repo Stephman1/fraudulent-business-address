@@ -35,12 +35,17 @@ class ChAPI():
             str: API key for Companies House account
         """
         if authentication_fp is None:
-            auth_file = ChAPI.getFileParDir('authentication.txt')
+            auth_file = ChAPI.getFileParDir('config.json')
         else:
             auth_file = authentication_fp
-        with open(auth_file,'r') as f:
-            auth_dict = json.loads(f.read())
-        return auth_dict['api_key']
+        try:
+            with open(auth_file, 'r') as f:
+                auth_dict = json.load(f)
+            return auth_dict['api_key']
+        except FileNotFoundError:
+            raise RuntimeError(f"Config file '{auth_file}' not found.")
+        except json.JSONDecodeError:
+            raise RuntimeError(f"Invalid JSON in '{auth_file}'.")
 
     
     @staticmethod
