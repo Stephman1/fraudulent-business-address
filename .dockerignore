@@ -1,0 +1,10 @@
+# Ignore git files
+backend/.git
+backend/.gitignore
+
+# Ignore local development databases (e.g., SQLite)
+backend/db.sqlite3
+
+# Ignore Python cache files
+**/__pycache__/
+*.pyc
