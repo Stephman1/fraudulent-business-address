@@ -17,10 +17,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire backend directory into the container
-COPY backend /app/backend/
-COPY address /app/address/
-COPY companies_house /app/companies_house/
-COPY manage.py /app/
+COPY backend /app/
 
 # Expose port 8000 for the Django development server
 EXPOSE 8000
