@@ -31,8 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
+    "*" # Only for development, this should be changed to the server's domain or IP address in production.
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -69,9 +68,8 @@ MIDDLEWARE = [
 ]
 
 INTERNAL_IPS = [
-    # ...
-    '127.0.0.1',
-    # ...
+    "127.0.0.1",
+    "172.17.0.1",  # Default Docker bridge IP
 ]
 
 ROOT_URLCONF = "backend.urls"
