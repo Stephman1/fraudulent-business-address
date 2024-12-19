@@ -17,7 +17,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Define the path to the logs folder
-LOG_DIR = os.path.join(BASE_DIR, '..', 'logs')
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 # Create the logs directory if it doesn't exist
 os.makedirs(LOG_DIR, exist_ok=True)
