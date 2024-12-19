@@ -4,6 +4,8 @@ from rest_framework import viewsets, status
 
 from django.shortcuts import render
 
+import logging
+
 from . import models, serializers
 from . import models
 from .models import  UserData, UserAttribute
@@ -12,6 +14,10 @@ from companies_house.companies_house_api import ChAPI
 class UserDataViewSet(viewsets.ModelViewSet):
   queryset = models.UserData.objects.all()
   serializer_class = serializers.UserDataSerializer
+
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -26,12 +32,13 @@ def get_company_data(request):
     }
 
     if not query:
+        logger.error('Address is not provided')
         return Response({'error': 'Address is not provided'}, status=status.HTTP_400_BAD_REQUEST)
-       
     try:
         data = ChAPI.getChData(url=url, api_key=api_key, params=params)
         return Response(data, content_type='application/json')
     except Exception as e:
+        logger.error(str(e))
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
@@ -101,4 +108,5 @@ def add_user_data(request):
 
 @api_view(['GET'])
 def say_hello(request):
+    logger.debug('Kevin says hello!')
     return render(request, 'hello.html', {'name': 'Kevin'})
