@@ -204,6 +204,15 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# The directory where static files will be collected for production (e.g., running collectstatic)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Directories where Django will look for static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Global static folder
+    os.path.join(BASE_DIR, 'address/static'),  # Static folder for the 'address' app
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
