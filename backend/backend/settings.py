@@ -48,12 +48,29 @@ LOGGING = {
             'filename': os.path.join(LOG_DIR, 'error.log'),
             'formatter': 'verbose',
         },
+        'views_debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'views_debug.log'),
+            'formatter': 'verbose',
+        },
+        'views_error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'views_error.log'),
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['debug_file', 'error_file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'address.views': {
+            'handlers': ['views_debug_file', 'views_error_file'],
+            'level': 'DEBUG',
+            'propagate': False,  # Prevent duplicate logs in the django logger
         },
     },
 } 
