@@ -21,3 +21,12 @@ services:
     env_file:
       - .env
     restart: no
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-frontend
+    ports:
+      - "3000:80"
+    restart: no
