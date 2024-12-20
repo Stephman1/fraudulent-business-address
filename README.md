@@ -89,12 +89,20 @@ python manage.py migrate
 
 The backend server code is run in a Docker container. This container is built and run using a Docker compose yml file.
 
+It's a good idea to run the Unit tests before starting the web service.
+
+```
+docker compose run --rm test
+```
+
+If all tests pass then run the web service.
+
 ```
 # Build the image and start the Docker container:
-docker compose up --build -d  # possibly docker-compose
+docker compose up --build -d web  # possibly docker-compose
 
 # If you have already built the image and don't need to rebuild it then you can use:
-docker compose up -d
+docker compose up -d web
 ```
 
 The backend server is starting at [http://127.0.0.1:8000](http://127.0.0.1:8000/)
