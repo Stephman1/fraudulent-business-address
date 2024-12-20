@@ -16,6 +16,64 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Define the path to the logs folder
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+
+# Create the logs directory if it doesn't exist
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'error.log'),
+            'formatter': 'verbose',
+        },
+        'views_debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'views_debug.log'),
+            'formatter': 'verbose',
+        },
+        'views_error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'views_error.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['debug_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'address.views': {
+            'handlers': ['views_debug_file', 'views_error_file'],
+            'level': 'DEBUG',
+            'propagate': False,  # Prevent duplicate logs in the django logger
+        },
+    },
+} 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -71,6 +129,8 @@ INTERNAL_IPS = [
     "127.0.0.1",
     "172.17.0.1",  # Default Docker bridge IP
 ]
+
+
 
 ROOT_URLCONF = "backend.urls"
 
@@ -143,6 +203,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+# The directory where static files will be collected for production (e.g., running collectstatic)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Directories where Django will look for static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Global static folder
+    os.path.join(BASE_DIR, 'address/static'),  # Static folder for the 'address' app
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
