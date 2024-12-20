@@ -11,3 +11,13 @@ services:
     env_file:
       - .env
     restart: no  # Ensures the container does not restart automatically
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-test
+    command: ["sh", "-c", "python manage.py test address"]
+    env_file:
+      - .env
+    restart: no
