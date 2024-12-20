@@ -87,15 +87,20 @@ LOGGING = {
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    "*" # Only for development, this should be changed to the server's domain or IP address in production.
+    "localhost",
+    "127.0.0.1",
+    "web",        # Internal Docker Compose service name for Django
+    "frontend",   # Internal Docker Compose service name for React
+    # "your-production-domain.com",  # Replace with your domain in production
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://frontend:3000",
 ]
 
 

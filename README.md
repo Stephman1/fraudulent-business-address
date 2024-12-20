@@ -62,18 +62,20 @@ npm install
 yarn install
 ```
 
-## Running the Development Server
+## Running the Frontend Server
 
 ```
-- Using `npm`:
-npm run dev
+- Using `npm` build your project:
+npm run build
 
-- Using `yarn`:
-yarn dev
+- Build the Docker image:
+docker build -t react-frontend .
 
+- Run the container:
+docker run -p 3000:80 --name ch-frontend -d react-frontend
 ```
 
-This will start the Vite development server, and you can view your application in the browser at [http://localhost:5173](http://localhost:5173)
+This will start the Vite server in the Docker container named `ch-frontend`. You can view your application in the browser at [http://localhost:3000](http://localhost:3000).
 
 ## Running migrations for PostgreSQL database
 

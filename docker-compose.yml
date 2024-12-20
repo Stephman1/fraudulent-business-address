@@ -10,7 +10,7 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    restart: no  # Ensures the container does not restart automatically
+    restart: always
 
   test:
     build:
@@ -29,4 +29,4 @@ services:
     container_name: react-frontend
     ports:
       - "3000:80"
-    restart: no
+    restart: always
