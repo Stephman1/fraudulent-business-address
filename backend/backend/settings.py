@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,8 +94,8 @@ ALLOWED_HOSTS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-    "http://localhost:5174"
+    "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 
@@ -110,7 +111,7 @@ INSTALLED_APPS = [
     "address.apps.AddressConfig",
     'rest_framework',
     "corsheaders",
-    "debug_toolbar"
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -164,9 +165,18 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'TEST': {
+            'NAME': 'test_db',  # Name of the test database
+        },
     }
 }
 
+# Optionally, you can use an in-memory SQLite database for faster tests
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
