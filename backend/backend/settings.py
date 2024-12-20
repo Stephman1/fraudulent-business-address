@@ -90,7 +90,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "*",
     "localhost",
     "127.0.0.1",
     "web",        # Internal Docker Compose service name for Django
@@ -102,6 +101,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://frontend:3000",
+    "http://localhost:3000",
 ]
 
 

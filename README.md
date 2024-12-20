@@ -32,7 +32,7 @@ pip install -r requirements.txt
 # Saving relevant python packages in requirement
 pip freeze > requirements.txt
 
-# Do not upload virtual env folder, authentication.txt. 
+# Do not upload virtual env folder or the .env file
 # Do not expose your SECRET KEY from Django
 git status
 git pull 
@@ -57,57 +57,33 @@ cd frontend
 - Using `npm`:
 npm install
 
-
-- Using `yarn`
-yarn install
-```
-
-## Running the Frontend Server
-
-```
 - Using `npm` build your project:
 npm run build
-
-- Build the Docker image:
-docker build -t react-frontend .
-
-- Run the container:
-docker run -p 3000:80 --name ch-frontend -d react-frontend
 ```
 
-This will start the Vite server in the Docker container named `ch-frontend`. You can view your application in the browser at [http://localhost:3000](http://localhost:3000).
+## Create migrations for the database
 
-## Running migrations for PostgreSQL database
-
-If running the version of this repo that connects to a local PostgreSQL database. Then you will first need to install PostgreSQL, create a database, input the database connection details into the .env file and then generate migrations for your app, i.e., create the necessary tables in the database.
+You first need to create a database and input the database connection details into the .env file. You then need to generate migrations for your app, i.e., create the necessary tables in the database.
 
 ```
 cd backend
 python manage.py makemigrations address
-python manage.py migrate 
+python manage.py migrate
 ```
 
-## Running the Backend Server
+## Running the Backend and Frontend Servers as Docker services
 
-The backend server code is run in a Docker container. This container is built and run using a Docker compose yml file.
-
-It's a good idea to run the Unit tests before starting the web service.
+The backend and frontend server code is run in two Docker containers. These containers are built and run as services using a Docker compose YAML file. Make sure that you are at the same level as the `docker-compose.yml` file in the folder structure.
 
 ```
-docker compose run --rm test
+# Build the images and start the Docker services:
+docker compose up --build -d  # possibly docker-compose
+
+# If you have already built the images and don't need to rebuild any of them then you can use:
+docker compose up -d
 ```
 
-If all tests pass then run the web service.
-
-```
-# Build the image and start the Docker container:
-docker compose up --build -d web  # possibly docker-compose
-
-# If you have already built the image and don't need to rebuild it then you can use:
-docker compose up -d web
-```
-
-The backend server is starting at [http://127.0.0.1:8000](http://127.0.0.1:8000/)
+The backend server is located at [http://<HOST_IP>:8000](http://<HOST_IP>:8000). The frontend server is located at [http://<HOST_IP>:3000](http://<HOST_IP>:3000). The host IP could be an EC2 instance, a local host, etc.
 
 ```
 # To stop and clean up the containers, you can use:
