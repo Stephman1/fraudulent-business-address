@@ -11,16 +11,18 @@ services:
     env_file:
       - .env
     restart: always
+    depends_on:
+      - test # Ensure 'test' runs first
 
   test:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: django-test
-    command: ["sh", "-c", "python manage.py test address"]
+    command: ["sh", "-c", "python manage.py test address && exit 0"]
     env_file:
       - .env
-    restart: no
+    restart: "no"
 
   frontend:
     build:
@@ -30,3 +32,5 @@ services:
     ports:
       - "3000:80"
     restart: always
+    depends_on:
+      - test # Ensure 'test' runs first
