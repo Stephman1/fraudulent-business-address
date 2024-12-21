@@ -1,5 +1,5 @@
 services:
-  web:
+  server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,11 +24,11 @@ services:
       - .env
     restart: "no"
 
-  frontend:
+  client:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: react-frontend
+    container_name: react-client
     ports:
       - "3000:80"
     restart: always

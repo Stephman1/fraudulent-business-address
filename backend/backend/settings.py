@@ -92,15 +92,15 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "web",        # Internal Docker Compose service name for Django
-    "frontend",   # Internal Docker Compose service name for React
+    "server",   # Internal Docker Compose service name for Django
+    "client",   # Internal Docker Compose service name for React
     # "your-production-domain.com",  # Replace with your domain in production
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "http://frontend:3000",
+    "http://client:3000",
     "http://localhost:3000",
 ]
 
