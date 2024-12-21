@@ -101,7 +101,7 @@ const UserInfoForm = () => {
     form.reset();
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/address/add-user-data/', userData, {
+      const response = await axios.post('http://web:8000/address/add-user-data/', userData, {
         headers: {
           'Content-Type': 'application/json'
         }

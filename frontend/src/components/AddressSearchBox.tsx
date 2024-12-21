@@ -83,7 +83,7 @@ const onSubmit = async (addressData: any) => {
         let postcodeData: CompanyDataItem[] = [];
 
         if (streetNameQuery) {
-            const streetNameRequestUrl = `http://127.0.0.1:8000/address/search-address/?query=${encodedStreetName}`;
+            const streetNameRequestUrl = `http://web:8000/address/search-address/?query=${encodedStreetName}`;
             const streetNameResponse = await axios.get(streetNameRequestUrl, {
                 headers: {
                     Accept: "application/json",
@@ -93,7 +93,7 @@ const onSubmit = async (addressData: any) => {
         }
 
         if (sanitizedPostcode) {
-            const postcodeRequestUrl = `http://127.0.0.1:8000/address/search-address/?query=${encodedPostcode}`;
+            const postcodeRequestUrl = `http://web:8000/address/search-address/?query=${encodedPostcode}`;
             const postcodeResponse = await axios.get(postcodeRequestUrl, {
                 headers: {
                     Accept: "application/json",
