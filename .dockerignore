@@ -3,7 +3,7 @@
 **/.gitignore
 
 # Ignore local development databases (e.g., SQLite)
-**/db.sqlite3
+**/db.*
 
 # Ignore Python cache files
 __pycache__/
